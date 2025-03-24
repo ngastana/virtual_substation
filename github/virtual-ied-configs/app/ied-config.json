@@ -1,0 +1,53 @@
+[
+    {
+        "IED": "L1_BCU_SIF_200E",
+        "AccessPoints": [
+            {
+                "LogicalDevices": [
+                    {
+                        "LogicalDevice": "LD0",
+                        "LN0": {
+                            "lnClass": "LLN0",
+                            "lnType": "SF_CSD_V2.01_LLN0",
+                            "inst": "",
+                            "desc": "General",
+                            "Details": [
+                                {
+                                    "name": "NamPlt",
+                                    "type": "LPL_1_NamPlt",
+                                    "Attributes": [
+                                        {
+                                            "name": "vendor",
+                                            "bType": "VisString255",
+                                            "fc": "DC"
+                                        },
+                                        {
+                                            "name": "swRev",
+                                            "bType": "VisString255",
+                                            "fc": "DC"
+                                        },
+                                        {
+                                            "name": "d",
+                                            "bType": "VisString255",
+                                            "fc": "DC"
+                                        },
+                                        {
+                                            "name": "dU",
+                                            "bType": "Unicode255",
+                                            "fc": "DC"
+                                        },
+                                        {
+                                            "name": "configRev",
+                                            "bType": "VisString255",
+                                            "fc": "DC"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]
