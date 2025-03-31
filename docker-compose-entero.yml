@@ -9,7 +9,8 @@ services:
       - INTERFACE=eno1
       - APPID=0x4100
       - NS=120000
-    network_mode: host
+    networks:
+      - sv_network
     privileged: true
 
   # virtual-104-gtw:
@@ -31,7 +32,9 @@ services:
       - INTERFACE=eno1
       - APPID=0x4100
       - NS=120000
-    network_mode: host
+    networks:
+      - sv_network
+      - virtual_process_bus
     privileged: true
 
   virtual-merging-unit:
@@ -42,9 +45,23 @@ services:
       - INTERFACE=eno1
       - APPID=0x4100
       - NS=120000
-    network_mode: host
+    networks:
+      - sv_network
     privileged: true
 
+  smvgentime:
+    build: ./smvgentime
+    container_name: smvgentime
+    environment:
+      - TZ=Europe/Madrid
+      - INTERFACE=eth0
+      - APPID=0x4100
+      - NS=120000
+    logging:
+      driver: journald
+    networks:
+      - sv_network
+    privileged: true
 
   # virtual-ied-configs:
   #   build: ./virtual-ied-configs
@@ -53,3 +70,14 @@ services:
   #     - ./virtual-ied-configs/app/ied_config.json:/app/ied_config.json
   #   network_mode: bridge
   #   privileged: true
+
+
+
+networks:
+  sv_network:
+    name: sv_network
+    driver: bridge
+  virtual_process_bus:
+    name: virtual_process_bus
+    driver: macvlan
+
