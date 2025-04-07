@@ -1,6 +1,29 @@
 version: '3.8'
  
 services:
+  virtual-circuit-breaker:
+    build: ./virtual-circuit-breaker
+    container_name: virtual-circuit-breaker
+    environment:
+      - TZ=Europe/Madrid
+      - INTERFACE=eno1
+      - APPID=0x4100
+      - NS=120000
+    networks:
+      - sv_network
+    privileged: true
+
+  virtual-104-gtw:
+    build: ./virtual-104-gtw
+    container_name: virtual-104-gtw
+    environment:
+      - TZ=Europe/Madrid
+      - INTERFACE=eno1
+      - APPID=0x4100
+      - NS=120000
+    network_mode: host
+    privileged: true
+  
   virtual-ied:
     build: ./virtual-ied
     container_name: virtual-ied
@@ -11,6 +34,18 @@ services:
       - NS=120000
     logging:
       driver: journald
+    networks:
+      - sv_network
+    privileged: true
+
+  virtual-merging-unit:
+    build: ./virtual-merging-unit
+    container_name: virtual-merging-unit
+    environment:
+      - TZ=Europe/Madrid
+      - INTERFACE=eth0
+      - APPID=0x4100
+      - NS=120000
     networks:
       - sv_network
     privileged: true
@@ -29,6 +64,25 @@ services:
       - sv_network
     privileged: true
 
+  virtual-ied-configs:
+    build: ./virtual-ied-configs
+    container_name: virtual-ied-configs
+    command: ["python3", "./virtual-ied-configs/app/container_creator.py"]
+    network_mode: bridge
+    privileged: true
+
+  virtual_goose:
+    build: ./virtual_goose
+    container_name: virtual_goose
+    environment:
+      - TZ=Europe/Madrid
+      - INTERFACE=eno1
+      - APPID=0x4100
+      - NS=120000
+    networks:
+      - sv_network
+    privileged: true
+
 networks:
   sv_network:
     name: sv_network
@@ -36,4 +90,3 @@ networks:
   virtual_process_bus:
     name: virtual_process_bus
     driver: macvlan
-

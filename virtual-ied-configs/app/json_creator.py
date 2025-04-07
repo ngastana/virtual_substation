@@ -1,5 +1,7 @@
 import xml.etree.ElementTree as ET
 import json
+import glob
+import os
 
 def parse_data_type_templates(root, namespaces):
     #Extrae los DataTypeTemplates y los almacena en diccionarios
@@ -78,7 +80,7 @@ def scl_to_json(xml_file, output_json):
         with open(output_json, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
         
-        print(f'Archivo JSON generado correctamente: {output_json}')
+        print(f'Archivo JSON generado correctamente: ied-config.json')
     
     except ET.ParseError as e:
         print(f'Error al parsear el archivo XML: {e}')
@@ -87,7 +89,19 @@ def scl_to_json(xml_file, output_json):
     except Exception as e:
         print(f'Ocurrió un error: {e}')
 
-scl_to_json('IOP_2019_HV_2.scd.xml', 'ied-config.json')
+def process_all_scd_files(directory, output_json):
+    # Buscar todos los archivos que terminan con '.scd.xml' en el directorio especificado
+    scd_files = glob.glob(os.path.join(directory, "*.xml"))
+    
+    if not scd_files:
+        print("No se encontraron archivos .scd.xml en el directorio.")
+        return
+    
+    for xml_file in scd_files:
+        print(f"Procesando archivo: {xml_file}")
+        scl_to_json(xml_file, output_json)
+
+process_all_scd_files('.', 'ied-config.json')
 
 # import xml.etree.ElementTree as ET
 # import json
