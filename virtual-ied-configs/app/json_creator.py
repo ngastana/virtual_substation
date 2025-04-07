@@ -92,14 +92,15 @@ def scl_to_json(xml_file, output_json):
 def process_all_scd_files(directory, output_json):
     # Buscar todos los archivos que terminan con '.scd.xml' en el directorio especificado
     scd_files = glob.glob(os.path.join(directory, "*.xml"))
-    
+    print("QUE OSTIAS NEREA \n")   
     if not scd_files:
-        print("No se encontraron archivos .scd.xml en el directorio.")
+        print("No se encontraron archivos .xml en el directorio.")
         return
     
     for xml_file in scd_files:
         print(f"Procesando archivo: {xml_file}")
         scl_to_json(xml_file, output_json)
+    print("SE CREO EL JSON A TRASTEAR :D \n")
 
 process_all_scd_files('.', 'ied-config.json')
 
