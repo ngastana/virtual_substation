@@ -36,7 +36,7 @@ def scl_to_json(xml_file, output_json):
         tree = ET.parse(xml_file)
         root = tree.getroot()
         namespaces = {'scl': 'http://www.iec.ch/61850/2003/SCL'}
-        
+        print("SCL_TO_JSON \n")
         templates = parse_data_type_templates(root, namespaces)
         data = []
         
@@ -89,20 +89,52 @@ def scl_to_json(xml_file, output_json):
     except Exception as e:
         print(f'Ocurrió un error: {e}')
 
-def process_all_scd_files(directory, output_json):
-    # Buscar todos los archivos que terminan con '.scd.xml' en el directorio especificado
-    scd_files = glob.glob(os.path.join(directory, "*.xml"))
-    print("QUE OSTIAS NEREA \n")   
-    if not scd_files:
-        print("No se encontraron archivos .xml en el directorio.")
-        return
-    
-    for xml_file in scd_files:
-        print(f"Procesando archivo: {xml_file}")
-        scl_to_json(xml_file, output_json)
-    print("SE CREO EL JSON A TRASTEAR :D \n")
 
-process_all_scd_files('.', 'ied-config.json')
+def process_all_scd_files(directory, dummy_output):
+    base_path = os.path.join(os.getcwd(), directory)
+    search_path = os.path.join(base_path, "*.xml")
+    scd_files = glob.glob(search_path)
+    print("Directorio de búsqueda:", search_path, flush=True)
+    print("Archivos encontrados:", [os.path.basename(f) for f in scd_files], flush=True)
+    if not scd_files:
+        print("No se encontraron archivos .xml en el directorio especificado.", flush=True)
+        return
+    for xml_file in scd_files:
+        base_name = os.path.splitext(os.path.basename(xml_file))[0]
+        output_json_file = os.path.join(base_path, f"{base_name}.json")
+        print(f"Procesando archivo: {xml_file} -> Generando: {output_json_file}", flush=True)
+        try:
+            scl_to_json(xml_file, output_json_file)
+        except Exception as e:
+            print(f"Error procesando {xml_file}: {e}", flush=True)
+
+# def process_all_scd_files(directory, output_json):
+#     scd_files = glob.glob(os.path.join(directory, "*.xml"))
+#     print("Directorio actual:", os.getcwd())
+#     print("Archivos en el directorio actual:", os.listdir('.'))
+#     if not scd_files:
+#         print("No se encontraron archivos .xml en el directorio.")
+#         return
+#     for xml_file in scd_files:
+#         base_name = os.path.splitext(os.path.basename(xml_file))[0]
+#         output_json = os.path.join(base_path, f"{base_name}.json")
+#         print(f"Procesando archivo: {xml_file} -> Generando: {output_json}", flush=True)
+#         try:
+#             scl_to_json(xml_file, output_json)
+#         except Exception as e:
+#             print(f"Error procesando {xml_file}: {e}", flush=True)
+#     print("SE CREARON TODOS LOS ARCHIVOS JSON", flush=True)
+
+
+if __name__ == "__main__":
+    current_dir = os.getcwd()
+    print("Directorio actual:", current_dir, flush=True)
+    # Si el directorio actual termina en "app", se supone que ya está en la carpeta con los XML
+    if current_dir.endswith("app"):
+        process_all_scd_files('.', 'ied-config.json')
+    else:
+        process_all_scd_files('app', 'ied-config.json')
+
 
 # import xml.etree.ElementTree as ET
 # import json

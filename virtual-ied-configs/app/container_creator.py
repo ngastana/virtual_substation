@@ -1,5 +1,7 @@
 import json
 import subprocess
+import glob
+import os
 
 def load_json_config(json_file):
     with open(json_file, 'r', encoding='utf-8') as f:
@@ -8,7 +10,7 @@ def load_json_config(json_file):
 def build_and_run_breaker_container(instance_name, interface):
     # Construye la imagen del contenedor para el breaker
     build_command = [
-        "docker", "build", "./virtual-circuit-breaker",
+        "docker", "build", "../../virtual-circuit-breaker",
         "--build-arg", f"NODE_NAME={instance_name}",
         "--build-arg", f"INTERFACE={interface}",
         "-t", f"virtual-circuit-breaker:{instance_name}"
@@ -31,28 +33,27 @@ def create_breaker_containers_from_json(json_file):
     except Exception as e:
         print(f"Error al cargar el JSON: {e}")
         return
-    print("ESTOY AQUI")
+    print("ESTOY AQUI", flush=True)
     breaker_count = 0
     # Recorremos el JSON para contar los nodos lógicos de tipo "XCBR"
     for ied in data:
         for ap in ied.get("AccessPoints", []):
             for ld in ap.get("LogicalDevices", []):
                 for ln in ld.get("LogicalNodes", []):
-                    if ln.get("lnType") == "XCBR":
+                    if ln.get("lnClass") == "XCBR":
                         breaker_count += 1
 
-    print(f"Se encontraron {breaker_count} breakers (XCBR) en el JSON.")
+    print(f"Se encontraron {breaker_count} breakers (XCBR) en el JSON.", flush=True)
 
-    # Levanta un contenedor por cada breaker encontrado
     for i in range(1, breaker_count + 1):
         instance_name = f"breaker-{i}"
-        print(f"Levantando contenedor para {instance_name}...")
+        print(f"Levantando contenedor para {instance_name}...", flush=True)
         interface = "eth0"
         build_and_run_breaker_container(instance_name, interface)
 
-if __name__ == "__main__":
-    json_file = "ied-config.json"
-    create_breaker_containers_from_json(json_file)
+# if __name__ == "__main__":
+#     json_file = "IOP_2019_HV_2.scd.json"
+create_breaker_containers_from_json("IOP_2019_HV_2.scd.json")
 
 
 # import json

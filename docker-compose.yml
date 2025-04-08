@@ -65,9 +65,10 @@ services:
     privileged: true
 
   virtual-ied-configs:
-    build: ./virtual-ied-configs
+    build: 
+      context: .
+      dockerfile: virtual-ied-configs/Dockerfile
     container_name: virtual-ied-configs
-    command: ["python3", "./virtual-ied-configs/app/container_creator.py"]
     network_mode: bridge
     privileged: true
 

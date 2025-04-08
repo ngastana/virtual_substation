@@ -1,12 +1,11 @@
-FROM python:3.11-slim
+FROM python:3.9
 
-ARG NODE_NAME
 WORKDIR /app
 
-COPY app/ /app/
+COPY ./virtual-ied-configs /app
 
-RUN python3 /app/json_creator.py
+COPY ../virtual-circuit-breaker /app/virtual-circuit-breaker
 
-RUN python3 /app/container_creator.py
+RUN chmod +x /app/entrypoint.sh
 
-CMD ["echo", "Archivo JSON creado. Ejecuta container_creator.py fuera del contenedor."]
+CMD ["/app/entrypoint.sh"]
