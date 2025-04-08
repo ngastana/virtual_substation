@@ -64,13 +64,13 @@ services:
       - sv_network
     privileged: true
 
-  virtual-ied-configs:
-    build: 
-      context: .
-      dockerfile: virtual-ied-configs/Dockerfile
-    container_name: virtual-ied-configs
-    network_mode: bridge
-    privileged: true
+  # virtual-ied-configs:
+  #   build: 
+  #     context: .
+  #     dockerfile: virtual-ied-configs/Dockerfile
+  #   container_name: virtual-ied-configs
+  #   network_mode: bridge
+  #   privileged: true
 
   virtual_goose:
     build: ./virtual_goose
