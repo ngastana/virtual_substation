@@ -90,4 +90,4 @@ networks:
     driver: bridge
   virtual_process_bus:
     name: virtual_process_bus
-    driver: macvlan
+    driver: bridge

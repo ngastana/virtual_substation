@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+<Header id="SimpleXCBR" toolID="MinimalExample" version="1.0">
+	<History>
+	<Hitem revision="R001" version="1.0" what="Creación del archivo SCL mínimo" when="2025-04-11T12:00:00" who="Usuario" why="Prueba"/>
+	</History>
+</Header>
+
+<DataTypeTemplates>
+	<!-- Definición mínima de tipos para LN0 -->
+	<LNodeType id="LLN0Type">
+	<DO name="Op" type="DOTypeOp"/>
+	</LNodeType>
+	<DOType id="DOTypeOp">
+	<DA name="stVal" bType="BOOLEAN" fc="ST"/>
+	</DOType>
+	<DAType id="DATypeDummy">
+	<!-- Atributos dummy, se pueden ampliar según la necesidad -->
+	</DAType>
+</DataTypeTemplates>
+
+<IED name="XCBR_IED" manufacturer="TestManu" type="XCBR" configVersion="1.0">
+	<AccessPoint name="AP1">
+	<Server>
+		<LDevice inst="XCBR1">
+		<!-- Nodo Lógico General (LLN0) que utiliza el tipo definido en DataTypeTemplates -->
+		<LN0 lnClass="LLN0" lnType="LLN0Type" inst="" desc="Nodo lógico general">
+			<!-- Puedes incluir datos o atributos específicos para LN0 si lo requieres -->
+		</LN0>
+		<LN lnClass="XCBR" lnType="XCBRType" inst="" desc="BREaker">
+			<!-- Puedes incluir datos o atributos específicos para LN0 si lo requieres -->
+		</LN>
+		<!-- Si es necesario, se pueden agregar otros LogicalNodes (LN) aquí -->
+		</LDevice>
+	</Server>
+	</AccessPoint>
+  </IED>
+</SCL>

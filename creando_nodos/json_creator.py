@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import json
 import glob
 import os
+import subprocess
 
 def parse_data_type_templates(root, namespaces):
     #Extrae los DataTypeTemplates y los almacena en diccionarios
@@ -80,7 +81,7 @@ def scl_to_json(xml_file, output_json):
         with open(output_json, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
         
-        print(f'Archivo JSON generado correctamente: ied-config.json')
+        print(f'Archivo JSON generado correctamente: {output_json}')
     
     except ET.ParseError as e:
         print(f'Error al parsear el archivo XML: {e}')
@@ -92,155 +93,35 @@ def scl_to_json(xml_file, output_json):
 
 def process_all_scd_files(directory):
     base_path = os.path.join(os.getcwd(), directory)
-    search_path = os.path.join(base_path, "*.xml")
-    scd_files = glob.glob(search_path)
-    print("Directorio de búsqueda:", search_path, flush=True)
-    print("Archivos encontrados:", [os.path.basename(f) for f in scd_files], flush=True)
-    if not scd_files:
-        print("No se encontraron archivos .xml en el directorio especificado.", flush=True)
-        return
-    for xml_file in scd_files:
-        base_name = os.path.splitext(os.path.basename(xml_file))[0]
-        output_json_file = os.path.join(base_path, f"{base_name}.json")
-        print(f"Procesando archivo: {xml_file} -> Generando: {output_json_file}", flush=True)
-        try:
-            scl_to_json(xml_file, output_json_file)
-        except Exception as e:
-            print(f"Error procesando {xml_file}: {e}", flush=True)
+    xml_files = glob.glob(os.path.join(base_path, "*.xml"))
+    if not xml_files:
+        print("No se encontraron archivos XML en:", directory)
+        exit(1)
 
-# def process_all_scd_files(directory, output_json):
-#     scd_files = glob.glob(os.path.join(directory, "*.xml"))
-#     print("Directorio actual:", os.getcwd())
-#     print("Archivos en el directorio actual:", os.listdir('.'))
-#     if not scd_files:
-#         print("No se encontraron archivos .xml en el directorio.")
-#         return
-#     for xml_file in scd_files:
-#         base_name = os.path.splitext(os.path.basename(xml_file))[0]
-#         output_json = os.path.join(base_path, f"{base_name}.json")
-#         print(f"Procesando archivo: {xml_file} -> Generando: {output_json}", flush=True)
-#         try:
-#             scl_to_json(xml_file, output_json)
-#         except Exception as e:
-#             print(f"Error procesando {xml_file}: {e}", flush=True)
-#     print("SE CREARON TODOS LOS ARCHIVOS JSON", flush=True)
+    print("Archivos XML disponibles:")
+    for idx, file in enumerate(xml_files, start=1):
+        print(f"{idx}. {os.path.basename(file)}")
 
+    # Se pide al usuario que elija el archivo a procesar
+    try:
+        choice = int(input("Seleccione el número del archivo a procesar: "))
+        if choice < 1 or choice > len(xml_files):
+            print("Número inválido. Saliendo.")
+            exit(1)
+    except ValueError:
+        print("Entrada no válida. Saliendo.")
+        exit(1)
+
+    selected_xml = xml_files[choice - 1]
+    base_name = os.path.splitext(os.path.basename(selected_xml))[0]
+    output_json = os.path.join(directory, f"{base_name}.json")
+
+    print(f"Procesando archivo: {os.path.basename(selected_xml)}")
+    scl_to_json(selected_xml, output_json)
+    print(f"Ejecutando container_creator.py con: {output_json}")
+    subprocess.run(["python3", "./creando_nodos/container_creator.py", output_json], check=True)
 
 if __name__ == "__main__":
     current_dir = os.getcwd()
     print("Directorio actual:", current_dir, flush=True)
-    # Si el directorio actual termina en "app", se supone que ya está en la carpeta con los XML
     process_all_scd_files('creando_nodos/archivos_xml')
-    # if current_dir.endswith("app"):
-    #     process_all_scd_files('.', 'ied-config.json')
-    # else:
-    #     process_all_scd_files('app', 'ied-config.json')
-
-
-# import xml.etree.ElementTree as ET
-# import json
-
-# def scl_to_json(xml_file, output_file):
-# 		try:
-# 			tree = ET.parse(xml_file)
-# 			root = tree.getroot()
-# 			namespaces = {'scl': 'http://www.iec.ch/61850/2003/SCL'}
-			
-# 			data = []
-
-# 			ieds = root.findall('scl:IED', namespaces)
-# 			with open(output_file, 'w') as f:
-# 				for ied in ieds:
-# 					# ied_name = ied.get('name')
-# 					# f.write(f'IED: {ied_name}\n')
-# 					access_points = ied.findall('scl:AccessPoint', namespaces)
-# 					for ap in access_points:
-# 						servers = ap.findall('scl:Server', namespaces)
-# 						for server in servers:
-# 							logical_devices = server.findall('scl:LDevice', namespaces)
-# 							for ld in logical_devices:
-# 								ld_name = ld.get('inst')
-# 								f.write(f'Logical Device: {ld_name}\n')
-# 								zero_node = ld.find('scl:LN0', namespaces)
-# 								zero_name = zero_node.get('lnClass')
-# 								zero_type = zero_node.get('lnType')
-# 								zero_inst = zero_node.get('inst')
-# 								zero_desc = zero_node.get('desc')
-# 								f.write(f'   {zero_name} \n      type: {zero_type} inst: {zero_inst} desc: {zero_desc}\n')
-# 								#EN BUSCA DEL TIPO DE DATO
-# 								data_type_templates = root.findall('scl:DataTypeTemplates', namespaces)
-# 								for data_type_template in data_type_templates:
-# 									LNode_type_templates = data_type_template.findall('scl:LNodeType', namespaces)
-# 									for LNode_type_template in LNode_type_templates:
-# 										if (LNode_type_template.get('id') == zero_node.get('lnType')):
-# 											data_types = LNode_type_template.findall('scl:DO', namespaces)
-# 											for data_type in data_types:
-# 												do_name = data_type.get('name')
-# 												do_type = data_type.get('type')
-# 												f.write(f'            DO: {do_name} type: {do_type} \n')
-# 												do_type_direct = root.find(f'scl:DataTypeTemplates/scl:DOType[@id="{do_type}"]', namespaces)
-# 												#do_type_direct = data_type.find('scl:DOType id="', {do_type}, namespaces)
-# 												if do_type_direct is not None:
-# 													cdc = do_type_direct.get('cdc')
-# 													f.write(f'               DOType: {do_type} cdc: {cdc}\n')
-# 													das = do_type_direct.findall('scl:DA', namespaces)
-# 													for da in das:
-# 														da_name = da.get('name')
-# 														da_type = da.get('type')
-# 														da_bType = da.get('bType')
-# 														da_fc = da.get('fc')
-# 														f.write(f'               DA: {da_name} type: {da_type} btype: {da_bType} fc: {da_fc} \n')
-# 													if da_type is not None:
-# 														da_type_direct = root.find(f'scl:DataTypeTemplates/scl:DAType[@id="{da_type}"]', namespaces)
-# 														if da_type_direct is not None:
-# 															f.write(f'                         DAType: {da_type}')
-# 															bdas = da_type_direct.findall('scl:BDA', namespaces)
-# 															for bda in bdas:
-# 																bda_name = bda.get('name')
-# 																bda_type = bda.get('type')
-# 																bda_bType = bda.get('bType')
-# 																bda_valKind = bda.get('valKind')
-# 																f.write(f'                        		BDA: {bda_name} type: {bda_type} btype: {bda_bType} valKind: {bda_valKind} \n')
-# 								data_sets = zero_node.findall('scl:DataSet', namespaces)
-# 								for data_set in data_sets:
-# 									ds_name = data_set.get('name')
-# 									f.write(f'      Data Set: {ds_name}\n')
-# 									fcs = data_set.findall('scl:FCDA', namespaces)
-# 									for fc in fcs:
-# 										fc_name = fc.get('ldInst')
-# 										fc_class = fc.get('lnClass')
-# 										fc_type = fc.get('fc')
-# 										fc_prefix = fc.get('prefix')
-# 										fc_ln_inst = fc.get('lnInst')
-# 										fc_do_name = fc.get('doName')
-# 										f.write(f'        FC: {fc_name} class: {fc_class} type: {fc_type} prefix: {fc_prefix} lnInst: {fc_ln_inst} doName: {fc_do_name}\n')
-# 								logical_nodes = ld.findall('scl:LN', namespaces)
-# 								for ln in logical_nodes:
-# 									ln_class = ln.get('lnClass')
-# 									ln_type = ln.get('lnType')
-# 									ln_inst = ln.get('inst')
-# 									f.write(f'    Logical Node:\n\t\t class: {ln_class} type: {ln_type} inst: {ln_inst}\n')
-# 									data_set= ln.findall('scl:DataSet', namespaces)
-# 									for ds in data_set:
-# 										print('HOLA')
-# 										ds_name = ds.get('name')
-# 										f.write(f'    Data Set: {ds_name}\n')
-# 										fc = ds.findall('scl:FC', namespaces)
-# 										for f in fc:
-# 											fc_name = f.get('name')
-# 											f.write(f'      FC: {fc_name}\n')
-			
-# 			print(f'Información de IEDs y nodos lógicos escrita en {output_file}')
-# 		except ET.ParseError as e:
-# 			print(f'Error al parsear el archivo XML: {e}')
-# 		except FileNotFoundError as e:
-# 			print(f'Archivo no encontrado: {e}')
-# 		except Exception as e:
-# 			print(f'Ocurrió un error: {e}')
-
-# # Uso de la función
-# find_ieds_and_logical_nodes('IOP_2019_HV_2.scd.xml', 'logical_nodes.txt')
-
-
-#  rptena: report habilitado o no? Liberia mms
-# #  rptena: report habilitado o no? Liberia mms
