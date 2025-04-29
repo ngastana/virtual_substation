@@ -14,7 +14,6 @@ def parse_data_type_templates(root, namespaces):
     }
 
 def extract_ln_details(ln_type_id, lnode_types, do_types, namespaces):
-    #Extrae los detalles de una clase LN
     details = []
     if ln_type_id in lnode_types:
         for do in lnode_types[ln_type_id].findall('scl:DO', namespaces):
