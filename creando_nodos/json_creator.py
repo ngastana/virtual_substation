@@ -118,9 +118,17 @@ def process_all_scd_files(directory):
     print(f"Procesando archivo: {os.path.basename(selected_xml)}")
     scl_to_json(selected_xml, output_json)
     print(f"Ejecutando container_creator.py con: {output_json}")
-    subprocess.run(["python3", "./creando_nodos/container_creator.py", output_json], check=True)
+    #subprocess.run(["python3", "./creando_nodos/container_creator.py", output_json], check=True)
+    subprocess.run(["python3", "./creando_nodos/compose_generator.py", output_json], check=True)
 
 if __name__ == "__main__":
+    json_folder = os.path.join(os.path.dirname(__file__), 'archivos_xml')
+    for fichero in glob.glob(os.path.join(json_folder, '*.json')):
+        try:
+            os.remove(fichero)
+            print(f"Eliminado previo: {fichero}")
+        except OSError as e:
+            print(f"No se pudo eliminar {fichero}: {e}")
     current_dir = os.getcwd()
     print("Directorio actual:", current_dir, flush=True)
     process_all_scd_files('creando_nodos/archivos_xml')

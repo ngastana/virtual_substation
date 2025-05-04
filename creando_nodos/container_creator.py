@@ -94,8 +94,8 @@ def create_containers_from_json(json_file):
             prefix="virtual-104-gtw",
             context_subdir="virtual-104-gtw",
             instance_name=instance,
-            interface="eno1",
-            network_mode="host"
+            interface="eth0",
+            network_mode="sv_network"
         )
 
     # Lanzar contenedores de breakers
@@ -119,6 +119,7 @@ if __name__ == "__main__":
     )
 
     print("Usando JSON en:", json_file, flush=True)
+    ensure_network("sv_network")
     create_containers_from_json(json_file)
 
     # Eliminar JSON tras ejecución
