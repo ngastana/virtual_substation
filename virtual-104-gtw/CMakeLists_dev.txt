@@ -1,0 +1,43 @@
+set(CMAKE_BUILD_TYPE Debug)
+set (CMAKE_SOURCE_DIR "../app")
+set (CMAKE_CURRENT_BINARY_DIR "../build")
+
+include_directories(
+   ./app/include
+   /usr/local/include/lib60870
+   /usr/include/iec61850
+   /usr/local/include/libiec61850/
+)
+
+set(example_SRCS
+   ./app/simple_server.c
+   ./app/iec60870_point_map.c
+   ./app/iec61850_report_handle.c
+   ./app/ini.c
+   ./app/config.c
+)
+
+IF(WIN32)
+set_source_files_properties(${example_SRCS}
+                                       PROPERTIES LANGUAGE CXX)
+ENDIF(WIN32)
+
+
+
+add_custom_command(
+        TARGET v104gtw POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/app.ini
+                ${CMAKE_CURRENT_BINARY_DIR}/app.ini)
+                
+link_directories( /usr/local/lib /usr/lib/iec61850)
+
+add_executable(v104gtw
+  ${example_SRCS}
+)
+
+target_link_libraries(v104gtw
+    iec61850
+    lib60870
+    pthread
+)

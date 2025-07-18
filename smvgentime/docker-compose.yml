@@ -1,0 +1,43 @@
+version: "3.2"
+services:
+    smv_pub_1: &smv_pub_1
+        build: ./
+        container_name: smv_pub_1
+        environment:
+            - TZ=Europe/Madrid
+            - INTERFACE=eth0
+            - APPID=0x4000
+            - NS=100000
+        network_mode: host
+        privileged: true
+    smv_pub_2:
+        <<: *smv_pub_1
+        container_name: smv_pub_2
+        environment:
+            - TZ=Europe/Madrid
+            - INTERFACE=eth0
+            - APPID=0x4100
+            - NS=100000
+        network_mode: host
+        privileged: true
+    smv_pub_3:
+        <<: *smv_pub_1
+        container_name: smv_pub_3
+        environment:
+            - TZ=Europe/Madrid
+            - INTERFACE=eth0
+            - APPID=0x4200
+            - NS=100000
+        network_mode: host
+        privileged: true
+    smv_pub_4:
+        <<: *smv_pub_1
+        container_name: smv_pub_4
+        environment:
+            - TZ=Europe/Madrid
+            - INTERFACE=eth0
+            - APPID=0x4300
+            - NS=100000
+        network_mode: host
+        privileged: true
+

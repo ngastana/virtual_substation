@@ -1,0 +1,5 @@
+.vscode/c_cpp_properties.json
+.vscode/settings.json
+.vscode/tasks.json
+app/include/virtual_xcbr_model.h
+app/src/virtual_xcbr_model.c

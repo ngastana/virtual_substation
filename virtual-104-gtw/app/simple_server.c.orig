@@ -1,0 +1,554 @@
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <signal.h>
+#include <pthread.h>
+
+#include "cs104_slave.h"
+
+#include "hal_thread.h"
+#include "hal_time.h"
+
+#include "iec60870_point_map.h"
+
+#include "iec61850_client.h"
+#include "iec61850_report_handle.h"
+#include <time.h>
+
+
+static bool running = true;
+bool isScada = false;
+
+extern PointMap pointMapping;
+
+
+void
+sigint_handler(int signalId)
+{
+    running = false;
+}
+
+void
+printCP56Time2a(CP56Time2a time)
+{
+    printf("%02i:%02i:%02i %02i/%02i/%04i", CP56Time2a_getHour(time),
+                             CP56Time2a_getMinute(time),
+                             CP56Time2a_getSecond(time),
+                             CP56Time2a_getDayOfMonth(time),
+                             CP56Time2a_getMonth(time),
+                             CP56Time2a_getYear(time) + 2000);
+}
+
+/* Callback handler to log sent or received messages (optional) */
+static void
+rawMessageHandler(void* parameter, IMasterConnection conneciton, uint8_t* msg, int msgSize, bool sent)
+{
+    if (sent)
+        printf("SEND: ");
+    else
+        printf("RCVD: ");
+
+    int i;
+    for (i = 0; i < msgSize; i++) {
+        printf("%02x ", msg[i]);
+    }
+
+    printf("\n");
+}
+
+static bool
+clockSyncHandler (void* parameter, IMasterConnection connection, CS101_ASDU asdu, CP56Time2a newTime)
+{
+    printf("Process time sync command with time "); printCP56Time2a(newTime); printf("\n");
+
+    uint64_t newSystemTimeInMs = CP56Time2a_toMsTimestamp(newTime);
+
+    /* Set time for ACT_CON message */
+    CP56Time2a_setFromMsTimestamp(newTime, Hal_getTimeInMs());
+
+    /* update system time here */
+
+    return true;
+}
+
+static bool
+interrogationHandler(void* parameter, IMasterConnection connection, CS101_ASDU asdu, uint8_t qoi)
+{
+    printf("Received interrogation for group %i\n", qoi);
+
+    if (qoi == 20) { /* only handle station interrogation */
+
+        CS101_AppLayerParameters alParams = IMasterConnection_getApplicationLayerParameters(connection);
+
+        IMasterConnection_sendACT_CON(connection, asdu, false);
+
+        /* The CS101 specification only allows information objects without timestamp in GI responses */
+        CS101_ASDU newAsdu = CS101_ASDU_create(alParams, false, CS101_COT_INTERROGATED_BY_STATION, 0, 1, false, false);
+
+        InformationObject io = (InformationObject) MeasuredValueShort_create(NULL, 6241, pointMapping.POINT_6241_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) MeasuredValueShort_create(NULL, 28960, pointMapping.POINT_28960_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) MeasuredValueShort_create(NULL, 28961, pointMapping.POINT_28961_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) MeasuredValueShort_create(NULL, 28962, pointMapping.POINT_28962_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) MeasuredValueShort_create(NULL, 28963, pointMapping.POINT_28963_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+        IMasterConnection_sendASDU(connection, newAsdu);
+
+        CS101_ASDU_destroy(newAsdu);
+
+        newAsdu = CS101_ASDU_create(alParams, false, CS101_COT_INTERROGATED_BY_STATION,
+                    0, 1, false, false);
+
+        io = (InformationObject) SinglePointInformation_create(NULL, 104, true, IEC60870_QUALITY_GOOD);
+        CS101_ASDU_addInformationObject(newAsdu, io);
+        InformationObject_destroy(io);
+
+        io = (InformationObject) SinglePointInformation_create(NULL, 28600, pointMapping.POINT_28600_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+        io = (InformationObject) SinglePointInformation_create(NULL, 28600, pointMapping.POINT_28600_VALUE, IEC60870_QUALITY_GOOD);
+        CS101_ASDU_addInformationObject(newAsdu, io);
+        InformationObject_destroy(io);
+
+        io = (InformationObject) SinglePointInformation_create(NULL, 28602, pointMapping.POINT_28602_VALUE, IEC60870_QUALITY_GOOD);
+        CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28604, pointMapping.POINT_28604_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28606, pointMapping.POINT_28606_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28608, pointMapping.POINT_28608_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28610, pointMapping.POINT_28610_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28612, pointMapping.POINT_28612_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28614, pointMapping.POINT_28614_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28616, pointMapping.POINT_28616_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28618, pointMapping.POINT_28618_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28620, pointMapping.POINT_28620_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28622, pointMapping.POINT_28622_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28624, pointMapping.POINT_28624_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28626, pointMapping.POINT_28626_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28628, pointMapping.POINT_28628_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28630, pointMapping.POINT_28630_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28632, pointMapping.POINT_28632_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28634, pointMapping.POINT_28634_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28636, pointMapping.POINT_28636_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28638, pointMapping.POINT_28638_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28640, pointMapping.POINT_28640_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28642, pointMapping.POINT_28642_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28644, pointMapping.POINT_28644_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28646, pointMapping.POINT_28646_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28648, pointMapping.POINT_28648_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28650, pointMapping.POINT_28650_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28652, pointMapping.POINT_28652_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28654, pointMapping.POINT_28654_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28656, pointMapping.POINT_28656_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28658, pointMapping.POINT_28658_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28660, pointMapping.POINT_28660_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+		io = (InformationObject) SinglePointInformation_create(NULL, 28662, pointMapping.POINT_28662_VALUE, IEC60870_QUALITY_GOOD);
+		CS101_ASDU_addInformationObject(newAsdu, io);
+		InformationObject_destroy(io);
+
+        IMasterConnection_sendASDU(connection, newAsdu);
+
+        CS101_ASDU_destroy(newAsdu);
+
+        IMasterConnection_sendACT_TERM(connection, asdu);
+    }
+    else {
+        IMasterConnection_sendACT_CON(connection, asdu, true);
+    }
+
+    return true;
+}
+
+static bool
+asduHandler(void* parameter, IMasterConnection connection, CS101_ASDU asdu)
+{
+    if (CS101_ASDU_getTypeID(asdu) == C_SC_NA_1) {
+        printf("El SCADA ha enviado un comando\n");
+
+        if  (CS101_ASDU_getCOT(asdu) == CS101_COT_ACTIVATION) {
+            InformationObject io = CS101_ASDU_getElement(asdu, 0);
+
+            if (InformationObject_getObjectAddress(io) == 64185) {
+                SingleCommand sc = (SingleCommand) io;
+
+                printf("IOA: %i . Se solicita cambiar el estado del interruptor BRK52 a %i\n", InformationObject_getObjectAddress(io), SingleCommand_getState(sc));
+
+                pointMapping.POINT_28604_VALUE = SingleCommand_getState(sc);
+
+                //CS101_ASDU_addInformationObject(asdu, (InformationObject)SinglePointInformation_create(NULL, 28604, pointMapping.POINT_28604_VALUE, IEC60870_QUALITY_GOOD));
+
+                if(SingleCommand_getState(sc) == false)
+                {
+                	pointMapping.POINT_6241_VALUE = 0.0;
+                	pointMapping.POINT_28960_VALUE = 0.0;
+                	pointMapping.POINT_28961_VALUE = 0.0;
+                	pointMapping.POINT_28962_VALUE = 0.0;
+                	pointMapping.POINT_28963_VALUE = 0.0;
+                }
+                else
+                {
+                	pointMapping.POINT_6241_VALUE = 58.1;
+					pointMapping.POINT_28960_VALUE = 233.4;
+					pointMapping.POINT_28961_VALUE = 53.7;
+					pointMapping.POINT_28962_VALUE = 22.2;
+					pointMapping.POINT_28963_VALUE = 138.0;
+                }
+
+                CS101_ASDU_setCOT(asdu, CS101_COT_ACTIVATION_CON);
+            }
+            else
+            {
+            	printf("El IOA [%i] que has enviado no se corresponde con el BRK52 sobre el que te hemos pedido operar\n", InformationObject_getObjectAddress(io));
+                CS101_ASDU_setCOT(asdu, CS101_COT_UNKNOWN_IOA);
+            }
+
+            InformationObject_destroy(io);
+        }
+        else
+        {
+        	printf("El COMANDO [%i] que has enviado no se corresponde con el comando que debes enviar\n", CS101_ASDU_getTypeID(asdu));
+            CS101_ASDU_setCOT(asdu, CS101_COT_UNKNOWN_COT);
+        }
+
+        IMasterConnection_sendASDU(connection, asdu);
+
+        CS101_AppLayerParameters alParams = IMasterConnection_getApplicationLayerParameters(connection);
+        CS101_ASDU newAsdu = CS101_ASDU_create(alParams, false, CS101_COT_SPONTANEOUS, 0, 1, false, false);
+        CS101_ASDU_addInformationObject(newAsdu, (InformationObject)SinglePointInformation_create(NULL, 28604, pointMapping.POINT_28604_VALUE, IEC60870_QUALITY_GOOD));
+        IMasterConnection_sendASDU(connection, newAsdu);
+        CS101_ASDU_destroy(newAsdu);
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool
+connectionRequestHandler(void* parameter, const char* ipAddress)
+{
+    printf("Enhorabuena!!! Has conseguido que el SCADA [%s] se conecte al honeypot\n", ipAddress);
+
+    if (strcmp(ipAddress, "10.10.30.11") == 0)
+    {
+    	isScada = true;
+    }
+    else
+    {
+    	isScada = false;
+    }
+
+#if 0
+    if (strcmp(ipAddress, "127.0.0.1") == 0) {
+        printf("Accept connection\n");
+        return true;
+    }
+    else {
+        printf("Deny connection\n");
+        return false;
+    }
+#else
+    return true;
+#endif
+}
+
+static void
+connectionEventHandler(void* parameter, IMasterConnection con, CS104_PeerConnectionEvent event)
+{
+    if (event == CS104_CON_EVENT_CONNECTION_OPENED) {
+        printf("Connection opened (%p)\n", con);
+    }
+    else if (event == CS104_CON_EVENT_CONNECTION_CLOSED) {
+        printf("Connection closed (%p)\n", con);
+    }
+    else if (event == CS104_CON_EVENT_ACTIVATED) {
+        printf("Connection activated (%p)\n", con);
+    }
+    else if (event == CS104_CON_EVENT_DEACTIVATED) {
+        printf("Connection deactivated (%p)\n", con);
+    }
+}
+
+int
+main(int argc, char** argv)
+{
+    /* Add Ctrl-C handler */
+    signal(SIGINT, sigint_handler);
+
+    /* create a new slave/server instance with default connection parameters and
+     * default message queue size */
+    CS104_Slave slave = CS104_Slave_create(10, 10);
+
+    CS104_Slave_setLocalAddress(slave, "0.0.0.0");
+
+    /* Set mode to a single redundancy group
+     * NOTE: library has to be compiled with CONFIG_CS104_SUPPORT_SERVER_MODE_SINGLE_REDUNDANCY_GROUP enabled (=1)
+     */
+    CS104_Slave_setServerMode(slave, CS104_MODE_MULTIPLE_REDUNDANCY_GROUPS);
+
+    CS104_RedundancyGroup redGroup1 = CS104_RedundancyGroup_create("red-group-1");
+    CS104_RedundancyGroup_addAllowedClient(redGroup1, "10.10.30.11");
+
+    CS104_RedundancyGroup redGroup2 = CS104_RedundancyGroup_create("red-group-2");
+    CS104_RedundancyGroup_addAllowedClient(redGroup2, "10.10.30.20");
+    CS104_RedundancyGroup_addAllowedClient(redGroup2, "10.0.2.2");
+
+    CS104_Slave_addRedundancyGroup(slave,redGroup1);
+    CS104_Slave_addRedundancyGroup(slave,redGroup2);
+
+    /* get the connection parameters - we need them to create correct ASDUs */
+    CS101_AppLayerParameters alParams = CS104_Slave_getAppLayerParameters(slave);
+
+    /* set the callback handler for the clock synchronization command */
+    CS104_Slave_setClockSyncHandler(slave, clockSyncHandler, NULL);
+
+    /* set the callback handler for the interrogation command */
+    CS104_Slave_setInterrogationHandler(slave, interrogationHandler, NULL);
+
+    /* set handler for other message types */
+    CS104_Slave_setASDUHandler(slave, asduHandler, NULL);
+
+    /* set handler to handle connection requests (optional) */
+    CS104_Slave_setConnectionRequestHandler(slave, connectionRequestHandler, NULL);
+
+    /* set handler to track connection events (optional) */
+    CS104_Slave_setConnectionEventHandler(slave, connectionEventHandler, NULL);
+
+    /* uncomment to log messages */
+    //CS104_Slave_setRawMessageHandler(slave, rawMessageHandler, NULL);
+
+    // Point map init
+    initializePointMapValues();
+
+    CS104_Slave_start(slave);
+
+    if (CS104_Slave_isRunning(slave) == false) {
+        printf("Starting server failed!\n");
+        goto exit_program;
+    }
+    else
+    {
+    	printf("########################################################################################################\n");
+        printf("El programa ha arrancado correctamente y está a la escucha de peticiones IEC 60870-5-104\n");
+        printf("Ahora te toca conseguir redirigir las peticiones del SCADA a este suplantador\n");
+        printf("########################################################################################################\n\n");
+    }
+
+
+	pthread_t id;
+
+  	int j = 1;
+  	pthread_create(&id, NULL, iecReportHandle, &j);
+         
+    
+    while (running) {
+		printf ("Running...!!\n");
+        Thread_sleep(1000);
+
+        if(isScada == true)
+        {
+			CS101_ASDU newAsdu = CS101_ASDU_create(alParams, false, CS101_COT_PERIODIC, 0, 1, false, false);
+
+			InformationObject io = (InformationObject) MeasuredValueShort_create(NULL, 6240, pointMapping.POINT_6240_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 6241, pointMapping.POINT_6241_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28960, pointMapping.POINT_28960_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28961, pointMapping.POINT_28961_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28962, pointMapping.POINT_28962_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28963, pointMapping.POINT_28963_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28972, pointMapping.POINT_28972_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28973, pointMapping.POINT_28973_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28974, pointMapping.POINT_28974_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28975, pointMapping.POINT_28975_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28976, pointMapping.POINT_28976_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28977, pointMapping.POINT_28977_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28978, pointMapping.POINT_28978_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28979, pointMapping.POINT_28979_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28980, pointMapping.POINT_28980_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28981, pointMapping.POINT_28981_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28982, pointMapping.POINT_28982_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28983, pointMapping.POINT_28983_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			io = (InformationObject) MeasuredValueShort_create(NULL, 28984, pointMapping.POINT_28984_VALUE, IEC60870_QUALITY_GOOD);
+			CS101_ASDU_addInformationObject(newAsdu, io);
+			InformationObject_destroy(io);
+
+			/* Add ASDU to slave event queue - don't release the ASDU afterwards!
+			 * The ASDU will be released by the Slave instance when the ASDU
+			 * has been sent.
+			 */
+			CS104_Slave_enqueueASDU(slave, newAsdu);
+
+
+			CS101_ASDU_destroy(newAsdu);
+
+        }
+    }
+
+    CS104_Slave_stop(slave);
+	
+	int* ptr;
+  	pthread_join(id, (void**)&ptr);
+  	printf("Value recevied by parent from IEC61850 Handle: ");
+ 	printf("%i\n", *ptr);
+
+exit_program:
+    CS104_Slave_destroy(slave);
+
+    Thread_sleep(500);
+}

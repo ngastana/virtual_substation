@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+  <Header id="" nameStructure="IEDName">
+  </Header>
+  <Communication>
+    <SubNetwork name="subnetwork1" type="8-MMS">
+      <ConnectedAP iedName="virtualXCBR" apName="accessPoint1">
+        
+	      
+      </ConnectedAP>
+    </SubNetwork>
+  </Communication>
+  <IED name="virtualXCBR" manufacturer="Tecnalia RD">
+    <Services>
+      <DynAssociation />
+      <GetDirectory />
+      <GetDataObjectDefinition />
+      <GetDataSetValue />
+      <DataSetDirectory />
+      <ReadWrite />
+      <GetCBValues />
+      <ConfLNs fixPrefix="true" fixLnInst="true" />
+      <GOOSE max="5" />
+      <GSSE max="5" />
+      <FileHandling />
+      <GSEDir />
+      <TimerActivatedControl />
+    </Services>
+    <AccessPoint name="accessPoint1">
+      <Server>
+        <Authentication />
+        <LDevice inst="VirtualXCBR">
+          <LN0 lnClass="LLN0" lnType="LLN01" inst="">
+            
+            <DataSet name="xcbr_status_ds" desc="XCBR Status DataSet">
+              <FCDA ldInst="VirtualXCBR" lnClass="XCBR" fc="ST" lnInst="1" doName="Pos" daName="stVal" />
+              <FCDA ldInst="VirtualXCBR" lnClass="XCBR" fc="ST" lnInst="1" doName="Pos" daName="q" />
+              <FCDA ldInst="VirtualXCBR" lnClass="XCBR" fc="ST" lnInst="1" doName="Pos" daName="t" />
+            </DataSet>
+
+            <ReportControl name="Status" indexed="true" confRev="1" datSet="xcbr_status_ds" rptID="XCBRStatus" buffered="true" intgPd="1000" bufTime="50">
+              <TrgOps period="false" />
+              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
+              <RptEnabled max="3" />
+            </ReportControl>
+
+			      <DOI name="Mod">
+              <DAI name="stVal">
+              	<Val>on</Val>
+              </DAI>
+              <DAI name="ctlModel">
+                <Val>status-only</Val>
+              </DAI>
+            </DOI>
+            <DOI name="Beh">
+              <DAI name="stVal">
+              	<Val>on</Val>
+              </DAI>
+            </DOI>
+            <DOI name="Health">
+              <DAI name="stVal">
+              	<Val>ok</Val>
+              </DAI>
+            </DOI>
+            <DOI name="NamPlt">
+              <DAI name="vendor">
+                <Val>Tecnalia RD</Val>
+              </DAI>
+              <DAI name="swRev">
+                <Val>1.0.0</Val>
+              </DAI>
+              <DAI name="d">
+                <Val>IEC 61850 Virtual IED</Val>
+              </DAI>
+            </DOI>
+          </LN0>
+          
+          <LN lnClass="XCBR" lnType="XCBR1" inst="1" prefix="">
+            <DOI name="Pos">
+              <DAI name="stVal">
+              	<Val>true</Val>
+              </DAI>
+            </DOI>
+          </LN>
+        </LDevice>
+      </Server>
+    </AccessPoint>
+  </IED>
+
+  <DataTypeTemplates>
+    <LNodeType id="LLN01" lnClass="LLN0">
+      <DO name="Mod" type="ENC_1_Mod" />
+      <DO name="Beh" type="ENS_1_Beh" />
+      <DO name="Health" type="ENS_2_Health" />
+      <DO name="NamPlt" type="LPL_1_NamPlt" />
+    </LNodeType>
+
+    <LNodeType id="XCBR1" lnClass="XCBR">
+      <DO name="EEHealth" type="ENS_2_Health" />
+      <DO name="Loc" type="SPS_2_Loc" />
+      <DO name="OpCnt" type="ENS_2_Health" />
+      <DO name="Pos" type="DPC_1_Pos" />
+      <DO name="BlkOpn" type="SPC_1_Blk" />
+      <DO name="BlkCls" type="SPC_1_Blk" />
+    </LNodeType>
+
+    <DOType id="ENC_1_Mod" cdc="ENC">
+      <DA name="stVal" bType="Enum" type="Beh" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+    </DOType>
+    
+    <DOType id="ENS_1_Beh" cdc="ENS">
+      <DA name="stVal" bType="Enum" type="Beh" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+    
+    <DOType id="ENS_2_Health" cdc="ENS">
+      <DA name="stVal" bType="Enum" type="HealthKind" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+    
+    <DOType id="LPL_1_NamPlt" cdc="LPL">
+      <DA name="vendor" bType="VisString255" fc="DC" />
+      <DA name="swRev" bType="VisString255" fc="DC" />
+      <DA name="d" bType="VisString255" fc="DC" />
+      <DA name="configRev" bType="VisString255" fc="DC" />
+      <DA name="ldNs" bType="VisString255" fc="EX" />
+    </DOType>
+    
+    <DOType id="DPL_1_PhyNam" cdc="DPL">
+      <DA name="vendor" bType="VisString255" fc="DC" />
+    </DOType>
+
+    <DOType id="SPS_2_Loc" cdc="SPS">
+      <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+
+    <DOType id="DPC_1_Pos" cdc="DPC">
+      <DA name="origin" fc="ST" type="Originator_1" bType="Struct" />
+      <DA name="ctlNum" fc="ST" bType="INT8U" />
+      <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+    </DOType>
+
+    <DOType id="SPC_1_Blk" cdc="SPC">
+      <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+    </DOType>
+    
+    <DAType id="AnalogueValue_1">
+      <BDA name="i" bType="INT32" />
+    </DAType>
+
+    <DAType id="Originator_1">
+      <BDA name="orCat" type="OrCat" bType="Enum" />
+      <BDA name="orIdent" bType="Octet64" />
+    </DAType>
+    
+    <EnumType id="Beh">
+      <EnumVal ord="1">on</EnumVal>
+      <EnumVal ord="2">blocked</EnumVal>
+      <EnumVal ord="3">test</EnumVal>
+      <EnumVal ord="4">test/blocked</EnumVal>
+      <EnumVal ord="5">off</EnumVal>
+    </EnumType>
+    
+    <EnumType id="HealthKind">
+	    <EnumVal ord="1">ok</EnumVal>
+	    <EnumVal ord="2">warning</EnumVal>
+	    <EnumVal ord="3">alarm</EnumVal>
+    </EnumType>
+    
+    <EnumType id="CtlModels">
+      <EnumVal ord="0">status-only</EnumVal>
+      <EnumVal ord="1">direct-with-normal-security</EnumVal>
+      <EnumVal ord="2">sbo-with-normal-security</EnumVal>
+      <EnumVal ord="3">direct-with-enhanced-security</EnumVal>
+      <EnumVal ord="4">sbo-with-enhanced-security</EnumVal>
+    </EnumType>
+    
+    <EnumType id="OrCat">
+      <EnumVal ord="0">not-supported</EnumVal>
+      <EnumVal ord="1">bay-control</EnumVal>
+      <EnumVal ord="2">station-control</EnumVal>
+      <EnumVal ord="3">remote-control</EnumVal>
+      <EnumVal ord="4">automatic-bay</EnumVal>
+      <EnumVal ord="5">automatic-station</EnumVal>
+      <EnumVal ord="6">automatic-remote</EnumVal>
+      <EnumVal ord="7">maintenance</EnumVal>
+      <EnumVal ord="8">process</EnumVal>
+    </EnumType>
+  
+  </DataTypeTemplates>
+</SCL>

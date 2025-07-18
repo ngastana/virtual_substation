@@ -1,0 +1,36 @@
+FROM ubuntu:24.04 AS builder
+RUN apt-get update && apt install -y build-essential && apt install -y git && apt install -y default-jre && apt install -y cmake
+
+ARG APP_HOME=/app
+
+## iec61850 section
+ARG IEC_61850_LIB_REPO_URL=https://github.com/mz-automation/libiec61850.git
+ARG IEC_61850_LIB_REPO_TAG=v1.5.1
+ARG LIBIEC_HOME=/app/libiec61850
+WORKDIR ${APP_HOME}
+RUN git clone ${IEC_61850_LIB_REPO_URL}
+
+WORKDIR ${LIBIEC_HOME}
+RUN cmake .
+RUN make install
+
+## iec-104 section
+ARG LIB104_HOME=/app/lib60870/lib60870-C
+ARG IEC_104_LIB_REPO_URL=https://github.com/mz-automation/lib60870.git
+WORKDIR ${APP_HOME}
+RUN git clone ${IEC_104_LIB_REPO_URL}
+
+WORKDIR ${LIB104_HOME}
+RUN cmake .
+RUN make WITHOUT_HAL=1 WITHOUT_COMMON=1 install
+RUN make  install
+
+## virtual-104-gtw section
+ARG IEC_104_GTW_REPO_URL=https://105083:sHea4MJZCfhj8DJrLzYF@git.code.tecnalia.com/DigitalEnergy/virtgrid/virtual-104-gtw.git
+ARG 104GTW_HOME=/app/virtual-104-gtw
+WORKDIR ${APP_HOME}
+RUN git clone ${IEC_104_GTW_REPO_URL}
+WORKDIR /app/virtual-104-gtw/build
+RUN cmake ..
+RUN make 
+

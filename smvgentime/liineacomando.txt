@@ -1,0 +1,49 @@
+sudo docker build -t smv_pub .
+
+---------
+OPCIÓN 1:
+---------
+Para ejecutar el contenedor directamente utilizando la interfaz física (eth0) de la máquina...
+
+sudo docker run -it --net host -e TZ=Europe/Madrid -e INTERFACE=eth0 -e APPID=0x4000 -e NS=100000 --privileged --name smv_pub_100us smv_pub
+
+...se le dice que utilice directamente la interfaz del host y se le indica expresamente el nombre (real) de dicha interfaz
+
+De esta manera se recoge directamente el tráfico de Ethernet de la interfaz física. El problema surge cuando este
+contenedor hay que enlazarlo a otra red de docker; ya que al ponerle --net host, no permite conectarlo a ninguna otra red.
+Como consecuencia, para "sacar" datos hacia fuera, hay que hacerlo a las IPs de los otros contenedores.
+
+---------
+OPCIÓN 2:
+---------
+Lo que haremos es crear una red macvlan de docker, cuyo parent es precisamente la interfaz física real (eth0)...
+
+sudo docker network create -d macvlan \
+--subnet=192.61.85.0/24 \
+--ip-range=192.61.85.128/25 \
+-o parent=eth0 mac61850
+
+...La interfaz se llamará mac61850, asignada a la Ethernet física real eth0.
+...Vemos que cogemos la misma subred de la interfaz real 192.61.85.0, pero sólo haremos
+...que los contenedores de esta interfaz puedan tener IPs en un rango desde 192.81.85.128 hasta 192.61.85.254;
+...realmente, esto no nos importa mucho, ya que vamos a coger sólo datos Ethernet.
+...Nótese que no le pongo el gateway porque no hay router, es un cable punto a punto
+sm
+Con esto, ahora mismo hay una red virtual mac61850 que es un bridge vlan con la interfaz real eth0, por lo que todo
+lo que viaje por el eth0 puede verse en la red virtual. Por lo tanto, tan sólo habrá que ejecutar el contenedor
+para recoger los datos...
+
+sudo docker run -it --net mac61850 -e TZ=Europe/Madrid -e INTERFACE=eth0 -e APPID=0x4000 -e NS=100000 --privileged --name smv_pub_100us smv_pub
+
+...Lógicamente, utilizaremos la red mac6150 (el puente)
+...Y utilizaremos como nombre de la interfaz "eth0", puesto que es el nombre que le ha dado la máquina Ubuntu
+...a la interfaz en la compilación.
+
+
+
+sudo docker start -i smv_pub_100us
+sudo docker stop smv_pub_100us
+
+
+Lanzamiento de 4 contenedores con APPID diferentes. Con el docker-compose.yml que hay en esta carpeta:
+sudo docker compose up -d

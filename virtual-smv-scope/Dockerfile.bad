@@ -1,0 +1,42 @@
+FROM ubuntu:22.04 AS builder_smv
+RUN apt-get update && apt install -y build-essential && apt install -y git && apt install -y cmake
+
+ARG APP_HOME=/app
+
+## iec61850 section
+ARG IEC_61850_LIB_REPO_URL=https://github.com/mz-automation/libiec61850.git
+ARG IEC_61850_LIB_REPO_TAG=v1.5.1
+ARG LIBIEC_HOME=/app/libiec61850
+WORKDIR ${APP_HOME}
+RUN git clone ${IEC_61850_LIB_REPO_URL}
+
+WORKDIR ${LIBIEC_HOME}
+RUN cmake .
+RUN make install
+
+FROM ubuntu:22.04
+RUN apt-get update -y && apt install -y git && apt install -y iproute2  && apt install -y net-tools
+
+RUN apt-get install -y python3
+RUN apt-get install -y pip
+RUN pip install Flask==2.1.0
+RUN pip install flask-restx==1.0.5
+RUN pip install jinja2==3.1.2
+RUN pip install MarkupSafe==2.1.1
+RUN pip install Werkzeug==2.2.2
+
+# ARG IEC_SMV_REPO_URL=https://github.com/robidev/smv-scope.git
+#ARG IEC_SMV_REPO_URL=https://105083:hNt6EaK-vn7ih5Jxs1Yt@git.code.tecnalia.com/DigitalEnergy/virtgrid/virtual-smv-scope.git
+ARG SMV_HOME=/app/smv-scope
+
+ARG APP_HOME=/app/virtual-smv-scope
+WORKDIR ${APP_HOME}
+#RUN git clone ${IEC_SMV_REPO_URL}
+COPY app.tar ${APP_HOME}
+RUN tar -xvf ${APP_HOME}/app.tar
+
+COPY --from=builder_smv /usr/local/lib/libiec61850.so  /usr/local/lib
+RUN  ln -s /usr/local/lib/libiec61850.so /usr/local/lib/libiec61850.so.1.4.2
+
+ENTRYPOINT ["/app/virtual-smv-scope/app/smvscope", "eth1", "172.17.0.2"]
+

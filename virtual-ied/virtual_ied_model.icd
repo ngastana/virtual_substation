@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+  <Header id="" nameStructure="IEDName">
+  </Header>
+  <Communication>
+    <SubNetwork name="subnetwork1" type="8-MMS">
+      <ConnectedAP iedName="virtualIED" apName="accessPoint1">
+        <GSE ldInst="GenericMeasurement" cbName="gcbOcTrip">
+           <Address>
+                <P type="VLAN-ID">1</P>
+                <P type="VLAN-PRIORITY">4</P>
+                <P type="APPID">1000</P>
+           </Address>
+           <MinTime>1000</MinTime>
+           <MaxTime>1000</MaxTime>
+	      </GSE>
+      </ConnectedAP>
+    </SubNetwork>
+  </Communication>
+  <IED name="virtualIED" manufacturer="Tecnalia RD">
+    <Services>
+      <DynAssociation />
+      <GetDirectory />
+      <GetDataObjectDefinition />
+      <GetDataSetValue />
+      <DataSetDirectory />
+      <ReadWrite />
+      <GetCBValues />
+      <ConfLNs fixPrefix="true" fixLnInst="true" />
+      <GOOSE max="5" />
+      <GSSE max="5" />
+      <FileHandling />
+      <GSEDir />
+      <TimerActivatedControl />
+    </Services>
+    <AccessPoint name="accessPoint1">
+      <Server>
+        <Authentication />
+        <LDevice inst="GenericMeasurement">
+          <LN0 lnClass="LLN0" lnType="LLN01" inst="">
+            
+            <DataSet name="measurements_ds" desc="Measurements">
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.phsA" daName="cVal.mag.i" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.phsA" daName="q" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.phsA" daName="t" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.phsB" daName="cVal.mag.i" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.phsB" daName="q" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.phsB" daName="t" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.phsC" daName="cVal.mag.i" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.phsC" daName="q" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.phsC" daName="t" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.neut" daName="cVal.mag.i" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.neut" daName="q" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="A.neut" daName="t" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.phsA" daName="cVal.mag.i" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.phsA" daName="q" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.phsA" daName="t" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.phsB" daName="cVal.mag.i" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.phsB" daName="q" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.phsB" daName="t" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.phsC" daName="cVal.mag.i" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.phsC" daName="q" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.phsC" daName="t" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.neut" daName="cVal.mag.i" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.neut" daName="q" />
+              <FCDA ldInst="GenericMeasurement" lnClass="MMXU" fc="MX" lnInst="1" doName="PhV.neut" daName="t" />
+            </DataSet>
+
+            <DataSet name="iocTrip_ds" desc="Instantaneous Overcurrent Trip Dataset">
+              <FCDA ldInst="GenericMeasurement" lnClass="PTRC" fc="ST" lnInst="1" doName="Tr" />
+            </DataSet>
+            
+            <ReportControl name="Measurements" indexed="true" confRev="1" datSet="measurements_ds" rptID="Measurements" buffered="false" intgPd="1000" >
+              <TrgOps period="true" />
+              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="false" entryID="true" configRef="true" />
+              <RptEnabled max="3" />
+            </ReportControl>
+
+            <GSEControl appID="ocTrip" name="gcbOcTrip" type="GOOSE" datSet="iocTrip_ds" confRev="1" />
+
+			      <DOI name="Mod">
+              <DAI name="stVal">
+              	<Val>on</Val>
+              </DAI>
+              <DAI name="ctlModel">
+                <Val>status-only</Val>
+              </DAI>
+            </DOI>
+            <DOI name="Beh">
+              <DAI name="stVal">
+              	<Val>on</Val>
+              </DAI>
+            </DOI>
+            <DOI name="Health">
+              <DAI name="stVal">
+              	<Val>ok</Val>
+              </DAI>
+            </DOI>
+            <DOI name="NamPlt">
+              <DAI name="vendor">
+                <Val>Tecnalia RD</Val>
+              </DAI>
+              <DAI name="swRev">
+                <Val>1.0.0</Val>
+              </DAI>
+              <DAI name="d">
+                <Val>IEC 61850 Virtual IED</Val>
+              </DAI>
+            </DOI>
+          </LN0>
+          <LN lnClass="LPHD" lnType="LPHD1" inst="1" prefix="">
+            <DOI name="PhyHealth">
+              <DAI name="stVal">
+              	<Val>ok</Val>
+              </DAI>
+            </DOI>
+          </LN>
+          
+          <LN lnClass="MMXU" lnType="MMXU1" inst="1" prefix="" />
+
+          <LN lnClass="PIOC" lnType="PIOC1" inst="1" prefix="" >
+            <DOI name="OP">
+              <DAI name="general">
+              	<Val>FALSE</Val>
+              </DAI>
+              <DAI name="phsA">
+              	<Val>FALSE</Val>
+              </DAI>
+              <DAI name="phsB">
+              	<Val>FALSE</Val>
+              </DAI>
+              <DAI name="phsC">
+              	<Val>FALSE</Val>
+              </DAI>
+              <DAI name="neut">
+              	<Val>FALSE</Val>
+              </DAI>
+            </DOI>
+          </LN>
+
+          <LN lnClass="PTOV" lnType="PTOV1" inst="1" prefix="" >
+            <DOI name="Str">
+              <DAI name="general">
+              	<Val>FALSE</Val>
+              </DAI>
+              <DAI name="dirGeneral">
+              	<Val>unknown</Val>
+              </DAI>
+              <DAI name="phsA">
+              	<Val>FALSE</Val>
+              </DAI>
+              <DAI name="dirPhsA">
+              	<Val>unknown</Val>
+              </DAI>
+              <DAI name="phsB">
+              	<Val>FALSE</Val>
+              </DAI>
+              <DAI name="dirPhsB">
+              	<Val>unknown</Val>
+              </DAI>
+              <DAI name="phsC">
+              	<Val>FALSE</Val>
+              </DAI>
+              <DAI name="dirPhsC">
+              	<Val>unknown</Val>
+              </DAI>
+              <DAI name="neut">
+              	<Val>FALSE</Val>
+              </DAI>
+              <DAI name="dirNeut">
+              	<Val>unknown</Val>
+              </DAI>
+            </DOI>
+          
+          </LN>
+          
+  
+          <LN lnClass="PTRC" lnType="PTRC1" inst="1" prefix="" />
+        </LDevice>
+      </Server>
+    </AccessPoint>
+  </IED>
+
+  <DataTypeTemplates>
+    <LNodeType id="LLN01" lnClass="LLN0">
+      <DO name="Mod" type="ENC_1_Mod" />
+      <DO name="Beh" type="ENS_1_Beh" />
+      <DO name="Health" type="ENS_2_Health" />
+      <DO name="NamPlt" type="LPL_1_NamPlt" />
+    </LNodeType>
+    
+    <LNodeType id="LPHD1" lnClass="LPHD">
+      <DO name="PhyNam" type="DPL_1_PhyNam" />
+      <DO name="PhyHealth" type="ENS_2_Health" />
+      <DO name="Proxy" type="SPS_1_Proxy" />
+    </LNodeType>
+
+    <LNodeType id="MMXU1" lnClass="MMXU">
+      <DO name="A" type="WYE_1_A" />
+      <DO name="PhV" type="WYE_1_PhV" />
+    </LNodeType>
+
+    <LNodeType id="PTRC1" lnClass="PTRC">
+      <DO name="Tr" type="ACT_1_TR" />
+    </LNodeType>
+
+    <LNodeType id="PIOC1" lnClass="PIOC">
+      <DO name="OP" type="ACT_1_OP" />
+    </LNodeType>
+
+    <LNodeType id="PTOV1" lnClass="PTOV">
+      <DO name="Str" type="ACD_1_Str" />
+    </LNodeType>
+
+    <LNodeType id="LPHD1" lnClass="LPHD">
+      <DO name="PhyNam" type="DPL_1_PhyNam" />
+      <DO name="PhyHealth" type="ENS_2_Health" />
+      <DO name="Proxy" type="SPS_1_Proxy" />
+    </LNodeType>
+    
+    <DOType id="ACT_1_TR" cdc="ACT">
+      <DA name="general" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+
+    <DOType id="ACT_1_OP" cdc="ACT">
+      <DA name="general" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="phsA" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="phsB" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="phsC" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="neut" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+
+    <DOType id="ACD_1_Str" cdc="ACD">
+      <DA name="general" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="dirGeneral" bType="Enum" type="direction" fc="ST" dchg="true" />
+      <DA name="phsA" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="dirPhsA" bType="Enum" type="direction" fc="ST" dchg="true" />
+      <DA name="phsB" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="dirPhsB" bType="Enum" type="direction" fc="ST" dchg="true" />
+      <DA name="phsC" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="dirPhsC" bType="Enum" type="direction" fc="ST" dchg="true" />
+      <DA name="neut" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="dirNeut" bType="Enum" type="direction" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+
+    <DOType id="WYE_1_A" cdc="WYE">
+      <SDO name="phsA" type="CMV_1_PHS" />
+      <SDO name="phsB" type="CMV_1_PHS" />
+      <SDO name="phsC" type="CMV_1_PHS" />
+      <SDO name="neut" type="CMV_1_PHS" />
+    </DOType>
+
+    <DOType id="WYE_1_PhV" cdc="WYE">
+      <SDO name="phsA" type="CMV_1_PHS" />
+      <SDO name="phsB" type="CMV_1_PHS" />
+      <SDO name="phsC" type="CMV_1_PHS" />
+      <SDO name="neut" type="CMV_1_PHS" />
+    </DOType>
+
+    <DOType id="CMV_1_PHS" cdc="CMV">
+      <DA name="cVal" bType="Struct" type="CVAL_Vector" fc="MX" dchg="true" />
+      <DA name="q" bType="Quality" fc="MX" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="MX" />
+    </DOType>
+
+    <DOType id="ENC_1_Mod" cdc="ENC">
+      <DA name="stVal" bType="Enum" type="Beh" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+    </DOType>
+    
+    <DOType id="ENS_1_Beh" cdc="ENS">
+      <DA name="stVal" bType="Enum" type="Beh" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+    
+    <DOType id="ENS_2_Health" cdc="ENS">
+      <DA name="stVal" bType="Enum" type="HealthKind" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+    
+    <DOType id="LPL_1_NamPlt" cdc="LPL">
+      <DA name="vendor" bType="VisString255" fc="DC" />
+      <DA name="swRev" bType="VisString255" fc="DC" />
+      <DA name="d" bType="VisString255" fc="DC" />
+      <DA name="configRev" bType="VisString255" fc="DC" />
+      <DA name="ldNs" bType="VisString255" fc="EX" />
+    </DOType>
+    
+    <DOType id="DPL_1_PhyNam" cdc="DPL">
+      <DA name="vendor" bType="VisString255" fc="DC" />
+    </DOType>
+    
+    <DOType id="SPS_1_Proxy" cdc="SPS">
+      <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+    
+    <DOType id="LPL_2_NamPlt" cdc="LPL">
+      <DA name="vendor" bType="VisString255" fc="DC" />
+      <DA name="swRev" bType="VisString255" fc="DC" />
+      <DA name="d" bType="VisString255" fc="DC" />
+    </DOType>
+    
+    <DAType id="CVAL_Vector">
+      <BDA name="mag" bType="Struct" type="AnalogueValue_1" />
+      <BDA name="ang" bType="Struct" type="AnalogueValue_1" />
+    </DAType>
+    
+    <DAType id="AnalogueValue_1">
+      <BDA name="i" bType="INT32" />
+    </DAType>
+    
+    <EnumType id="Beh">
+      <EnumVal ord="1">on</EnumVal>
+      <EnumVal ord="2">blocked</EnumVal>
+      <EnumVal ord="3">test</EnumVal>
+      <EnumVal ord="4">test/blocked</EnumVal>
+      <EnumVal ord="5">off</EnumVal>
+    </EnumType>
+    
+    <EnumType id="HealthKind">
+	  <EnumVal ord="1">ok</EnumVal>
+	  <EnumVal ord="2">warning</EnumVal>
+	  <EnumVal ord="3">alarm</EnumVal>
+    </EnumType>
+    
+    <EnumType id="CtlModels">
+      <EnumVal ord="0">status-only</EnumVal>
+      <EnumVal ord="1">direct-with-normal-security</EnumVal>
+      <EnumVal ord="2">sbo-with-normal-security</EnumVal>
+      <EnumVal ord="3">direct-with-enhanced-security</EnumVal>
+      <EnumVal ord="4">sbo-with-enhanced-security</EnumVal>
+    </EnumType>
+    
+    <EnumType id="OrCat">
+      <EnumVal ord="0">not-supported</EnumVal>
+      <EnumVal ord="1">bay-control</EnumVal>
+      <EnumVal ord="2">station-control</EnumVal>
+      <EnumVal ord="3">remote-control</EnumVal>
+      <EnumVal ord="4">automatic-bay</EnumVal>
+      <EnumVal ord="5">automatic-station</EnumVal>
+      <EnumVal ord="6">automatic-remote</EnumVal>
+      <EnumVal ord="7">maintenance</EnumVal>
+      <EnumVal ord="8">process</EnumVal>
+    </EnumType>
+
+    <EnumType id="direction">
+      <EnumVal ord="0">unknown</EnumVal>
+      <EnumVal ord="1">forward</EnumVal>
+      <EnumVal ord="2">backward</EnumVal>
+      <EnumVal ord="3">both</EnumVal>
+    </EnumType>
+  
+  </DataTypeTemplates>
+</SCL>
