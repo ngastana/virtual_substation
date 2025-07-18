@@ -33,13 +33,11 @@ def build_and_run_container(prefix, context_subdir, instance_name, interface, ne
     context_path = os.path.join(base_path, "..", context_subdir)
     container_name = f"{prefix}-{instance_name}"
 
-    # Eliminar contenedor previo si existe
     subprocess.run([
         "docker", "rm", "-f", container_name
     ], check=False, stdout=DEVNULL, stderr=DEVNULL)
     print(f"Contenedor {container_name} eliminado previamente (si existía).", flush=True)
 
-    # Construir la imagen
     image_tag = f"{prefix}:{instance_name}"
     build_cmd = [
         "docker", "build", context_path,
@@ -50,11 +48,9 @@ def build_and_run_container(prefix, context_subdir, instance_name, interface, ne
     print("Ejecutando comando de build:", " ".join(build_cmd), flush=True)
     subprocess.run(build_cmd, check=True)
 
-    # Unirse a la red si es necesario
     if network_mode and network_mode.lower() != "host":
         ensure_network(network_mode)
 
-    # Ejecutar el contenedor
     run_cmd = [
         "docker", "run", "-d", "--name", container_name
     ]
@@ -72,7 +68,6 @@ def create_containers_from_json(json_file):
         print(f"Error al cargar el JSON: {e}")
         return
 
-    # Recopilar nodos breakers (XCBR) y puntos de acceso para readers
     breakers = []
     readers = []
     for ied in data:
@@ -85,7 +80,6 @@ def create_containers_from_json(json_file):
         # Collect each AccessPoint as a reader
         readers.extend(ied.get("AccessPoints", []))
 
-    # Lanzar contenedores de readers
     print(f"📡 Se encontraron {len(readers)} readers (puntos de acceso) en el JSON.", flush=True)
     for idx, ap in enumerate(readers, start=1):
         instance = f"reader-{idx}"
@@ -98,7 +92,6 @@ def create_containers_from_json(json_file):
             network_mode="sv_network"
         )
 
-    # Lanzar contenedores de breakers
     print(f"🎚️ Se encontraron {len(breakers)} breakers (XCBR) en el JSON.", flush=True)
     for idx, ln in enumerate(breakers, start=1):
         instance = f"breaker-{idx}"

@@ -5,7 +5,6 @@ import os
 import subprocess
 
 def parse_data_type_templates(root, namespaces):
-    #Extrae los DataTypeTemplates y los almacena en diccionarios
     data_type_templates = root.find('scl:DataTypeTemplates', namespaces)
     return {
         "lnode_types": {ln.get('id'): ln for ln in data_type_templates.findall('scl:LNodeType', namespaces)},
@@ -31,6 +30,30 @@ def extract_ln_details(ln_type_id, lnode_types, do_types, namespaces):
             details.append(do_details)
     return details
 
+def parse_communication(root, namespaces):
+    networks = {}
+
+    communication = root.find('scl:Communication', namespaces)
+    if communication is None:
+        print("No se encontró la sección <Communication> en el XML elegido.")
+        return networks
+
+    for subnet in communication.findall('scl:SubNetwork', namespaces):
+        print("Leyendo sección Communication...")
+        if subnet is None:
+            print("No se encontró la sección <SubNetwork> en el XML elegido.")
+            continue
+        net_name = subnet.get('name', 'UnnamedNetwork')
+        networks[net_name] = []
+
+        for cap in subnet.findall('scl:ConnectedAP', namespaces):
+            ied_name = cap.get('iedName')
+            if ied_name and ied_name not in networks[net_name]:
+                networks[net_name].append(ied_name)
+
+    return networks
+
+
 def scl_to_json(xml_file, output_json):
     try:
         tree = ET.parse(xml_file)
@@ -40,6 +63,8 @@ def scl_to_json(xml_file, output_json):
         templates = parse_data_type_templates(root, namespaces)
         data = []
         
+        networks = parse_communication(root, namespaces)
+
         for ied in root.findall('scl:IED', namespaces):
             ied_data = {"IED": ied.get('name', 'Desconocido'), "AccessPoints": []}
             
@@ -77,8 +102,13 @@ def scl_to_json(xml_file, output_json):
             
             data.append(ied_data)
         
+        data_dict = {
+            "IEDs": data,
+            "Networks": networks
+        }
+        
         with open(output_json, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
+            json.dump(data_dict, f, indent=4, ensure_ascii=False)
         
         print(f'Archivo JSON generado correctamente: {output_json}')
     
@@ -101,7 +131,6 @@ def process_all_scd_files(directory):
     for idx, file in enumerate(xml_files, start=1):
         print(f"{idx}. {os.path.basename(file)}")
 
-    # Se pide al usuario que elija el archivo a procesar
     try:
         choice = int(input("Seleccione el número del archivo a procesar: "))
         if choice < 1 or choice > len(xml_files):
@@ -117,7 +146,7 @@ def process_all_scd_files(directory):
 
     print(f"Procesando archivo: {os.path.basename(selected_xml)}")
     scl_to_json(selected_xml, output_json)
-    print(f"Ejecutando container_creator.py con: {output_json}")
+    print(f"Ejecutando container_generator.py con: {output_json}")
     #subprocess.run(["python3", "./creando_nodos/container_creator.py", output_json], check=True)
     subprocess.run(["python3", "./creando_nodos/compose_generator.py", output_json], check=True)
 

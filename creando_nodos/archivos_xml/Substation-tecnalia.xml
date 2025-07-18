@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+	<Header id="Substation-tecnalia" toolID="Primera-prueba" version="1.0">
+		<History>
+		<Hitem revision="R001" version="1.0" what="Estructura subestación laboratorio tecnalia" when="2025-06-12T12:00:00" who="Nerea" why="gemelos digitales"/>
+		</History>
+	</Header>
+
+	<Communication>
+		<SubNetwork name="Cable_Network" type="8-MMS">
+			<ConnectedAP iedName="IED_Nodo1" apName="AP1">
+			<Address>
+				<P type="IP">192.168.100.1</P>
+				<P type="IP-SUBNET">255.255.255.0</P>
+			</Address>
+			</ConnectedAP>
+			<ConnectedAP iedName="IED_Nodo2" apName="AP1">
+			<Address>
+				<P type="IP">192.168.100.2</P>
+				<P type="IP-SUBNET">255.255.255.0</P>
+			</Address>
+			</ConnectedAP>
+		</SubNetwork>
+
+		<SubNetwork name="WIFI6_Network" type="8-MMS">
+			<ConnectedAP iedName="IED_Nodo1" apName="AP1">
+			<Address>
+				<P type="IP">10.10.0.1</P>
+				<P type="IP-SUBNET">255.255.255.0</P>
+			</Address>
+			</ConnectedAP>
+			<ConnectedAP iedName="IED_Nodo3" apName="AP1">
+			<Address>
+				<P type="IP">10.10.0.3</P>
+				<P type="IP-SUBNET">255.255.255.0</P>
+			</Address>
+			</ConnectedAP>
+		</SubNetwork>
+	</Communication>
+
+	<IED name="IED_Nodo1" manufacturer="Generic" type="MultiDevice" configVersion="1.0">
+	<AccessPoint name="AP1">
+		<Server>
+		<LDevice inst="LD_Nodo1">
+			<LN0 lnClass="LLN0" lnType="LLN0Type" inst=""/>
+			<LN lnClass="MMXU" lnType="MMXUType" inst="1" desc="Reader"/>
+			<LN lnClass="XCBR" lnType="XCBRType" inst="1" desc="Breaker"/>
+			<LN lnClass="USVC" lnType="USVCType" inst="1" desc="UCS"/> <!-- PODRIAMOS USAR CILO, CSWI, ISWI, GGIO-->
+		</LDevice>
+		</Server>
+	</AccessPoint>
+	</IED>
+
+	<IED name="IED_Nodo2" manufacturer="Generic" type="BreakerOnly" configVersion="1.0">
+	<AccessPoint name="AP1">
+		<Server>
+		<LDevice inst="LD_Nodo2">
+			<LN0 lnClass="LLN0" lnType="LLN0Type" inst=""/>
+			<LN lnClass="XCBR" lnType="XCBRType" inst="1" desc="Breaker Nodo 2"/>
+		</LDevice>
+		</Server>
+	</AccessPoint>
+	</IED>
+	
+	<IED name="IED_Nodo3" manufacturer="Generic" type="BreakerOnly" configVersion="1.0">
+	<AccessPoint name="AP1">
+		<Server>
+		<LDevice inst="LD_Nodo3">
+			<LN0 lnClass="LLN0" lnType="LLN0Type" inst=""/>
+			<LN lnClass="XCBR" lnType="XCBRType" inst="1" desc="Breaker Nodo 3"/>
+		</LDevice>
+		</Server>
+	</AccessPoint>
+	</IED>
+
+		<DataTypeTemplates>
+		<LNodeType id="LLN0Type" lnClass="LLN0">
+			<DO name="Op" type="DOTypeOp"/>
+		</LNodeType>
+
+		<DOType id="DOTypeOp" cdc="SPS">
+			<DA name="stVal" bType="BOOLEAN" fc="ST"/>
+		</DOType>
+
+		<LNodeType id="MMXUType" lnClass="MMXU">
+			<DO name="TotW" type="DOTypeTotW"/>
+		</LNodeType>
+		<DOType id="DOTypeTotW" cdc="WYE">
+			<DA name="mag" bType="FLOAT32" fc="MX"/>
+		</DOType>
+
+		<LNodeType id="XCBRType" lnClass="XCBR">
+			<DO name="Pos" type="DOTypePos"/>
+		</LNodeType>
+		<DOType id="DOTypePos" cdc="DPC">
+			<DA name="stVal" bType="BOOLEAN" fc="ST"/>
+			<DA name="ctlVal" bType="BOOLEAN" fc="CO"/>
+		</DOType>
+
+		<LNodeType id="USVCType" lnClass="USVC">
+			<DO name="Beh" type="DOTypeBeh"/>
+		</LNodeType>
+		<DOType id="DOTypeBeh" cdc="ENC">
+			<DA name="stVal" bType="ENUM" fc="ST" type="DATypeBehEnum"/>
+		</DOType>
+
+		<DAType id="DATypeBehEnum">
+			<BDA name="Operativo" bType="INT8U"/>
+		</DAType>
+	</DataTypeTemplates>
+</SCL>

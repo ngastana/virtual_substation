@@ -1,0 +1,218 @@
+{
+    "IEDs": [
+        {
+            "IED": "IED_Nodo1",
+            "AccessPoints": [
+                {
+                    "LogicalDevices": [
+                        {
+                            "LogicalDevice": "LD_Nodo1",
+                            "LN0": {
+                                "lnClass": "LLN0",
+                                "lnType": "LLN0Type",
+                                "inst": "",
+                                "desc": "N/A",
+                                "Details": [
+                                    {
+                                        "name": "Op",
+                                        "type": "DOTypeOp",
+                                        "Attributes": [
+                                            {
+                                                "name": "stVal",
+                                                "bType": "BOOLEAN",
+                                                "fc": "ST"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "LogicalNodes": [
+                                {
+                                    "lnClass": "MMXU",
+                                    "lnType": "MMXUType",
+                                    "inst": "1",
+                                    "Details": [
+                                        {
+                                            "name": "TotW",
+                                            "type": "DOTypeTotW",
+                                            "Attributes": [
+                                                {
+                                                    "name": "mag",
+                                                    "bType": "FLOAT32",
+                                                    "fc": "MX"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "lnClass": "XCBR",
+                                    "lnType": "XCBRType",
+                                    "inst": "1",
+                                    "Details": [
+                                        {
+                                            "name": "Pos",
+                                            "type": "DOTypePos",
+                                            "Attributes": [
+                                                {
+                                                    "name": "stVal",
+                                                    "bType": "BOOLEAN",
+                                                    "fc": "ST"
+                                                },
+                                                {
+                                                    "name": "ctlVal",
+                                                    "bType": "BOOLEAN",
+                                                    "fc": "CO"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "lnClass": "USVC",
+                                    "lnType": "USVCType",
+                                    "inst": "1",
+                                    "Details": [
+                                        {
+                                            "name": "Beh",
+                                            "type": "DOTypeBeh",
+                                            "Attributes": [
+                                                {
+                                                    "name": "stVal",
+                                                    "bType": "ENUM",
+                                                    "fc": "ST"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "IED": "IED_Nodo2",
+            "AccessPoints": [
+                {
+                    "LogicalDevices": [
+                        {
+                            "LogicalDevice": "LD_Nodo2",
+                            "LN0": {
+                                "lnClass": "LLN0",
+                                "lnType": "LLN0Type",
+                                "inst": "",
+                                "desc": "N/A",
+                                "Details": [
+                                    {
+                                        "name": "Op",
+                                        "type": "DOTypeOp",
+                                        "Attributes": [
+                                            {
+                                                "name": "stVal",
+                                                "bType": "BOOLEAN",
+                                                "fc": "ST"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "LogicalNodes": [
+                                {
+                                    "lnClass": "XCBR",
+                                    "lnType": "XCBRType",
+                                    "inst": "1",
+                                    "Details": [
+                                        {
+                                            "name": "Pos",
+                                            "type": "DOTypePos",
+                                            "Attributes": [
+                                                {
+                                                    "name": "stVal",
+                                                    "bType": "BOOLEAN",
+                                                    "fc": "ST"
+                                                },
+                                                {
+                                                    "name": "ctlVal",
+                                                    "bType": "BOOLEAN",
+                                                    "fc": "CO"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "IED": "IED_Nodo3",
+            "AccessPoints": [
+                {
+                    "LogicalDevices": [
+                        {
+                            "LogicalDevice": "LD_Nodo3",
+                            "LN0": {
+                                "lnClass": "LLN0",
+                                "lnType": "LLN0Type",
+                                "inst": "",
+                                "desc": "N/A",
+                                "Details": [
+                                    {
+                                        "name": "Op",
+                                        "type": "DOTypeOp",
+                                        "Attributes": [
+                                            {
+                                                "name": "stVal",
+                                                "bType": "BOOLEAN",
+                                                "fc": "ST"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "LogicalNodes": [
+                                {
+                                    "lnClass": "XCBR",
+                                    "lnType": "XCBRType",
+                                    "inst": "1",
+                                    "Details": [
+                                        {
+                                            "name": "Pos",
+                                            "type": "DOTypePos",
+                                            "Attributes": [
+                                                {
+                                                    "name": "stVal",
+                                                    "bType": "BOOLEAN",
+                                                    "fc": "ST"
+                                                },
+                                                {
+                                                    "name": "ctlVal",
+                                                    "bType": "BOOLEAN",
+                                                    "fc": "CO"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "Networks": {
+        "Cable_Network": [
+            "IED_Nodo1",
+            "IED_Nodo2"
+        ],
+        "WIFI6_Network": [
+            "IED_Nodo1",
+            "IED_Nodo3"
+        ]
+    }
+}
