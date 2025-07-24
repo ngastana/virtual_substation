@@ -70,12 +70,12 @@ data "openstack_networking_network_v2" "public_net" {
 }
 
 resource "openstack_networking_network_v2" "private_net" {
-  name = "nw_int_virtualizacióndenodoslógicos"
+  name = "nw_int_virtualizacióndenodoslógicos_imglocal"
   admin_state_up = true
 }
 
 resource "openstack_networking_subnet_v2" "private_subnet" {
-  name       = "custom-subnet-with-dns"
+  name       = "subred-privada-imglocal"
   network_id = openstack_networking_network_v2.private_net.id
   cidr       = "192.168.77.0/24"
   ip_version = 4
@@ -83,7 +83,7 @@ resource "openstack_networking_subnet_v2" "private_subnet" {
 }
 
 resource "openstack_networking_router_v2" "router" {
-  name                = "router-to-ext"
+  name                = "router-to-ext-imglocal"
   admin_state_up      = true
   external_network_id = data.openstack_networking_network_v2.public_net.id
 }
@@ -94,7 +94,8 @@ resource "openstack_networking_router_interface_v2" "router_interface" {
 }
 
 resource "openstack_networking_secgroup_v2" "ssh" {
-  name = "allow_ssh"
+  name = "allow_ssh-imglocal"
+  delete_default_rules = true
 }
 
 resource "openstack_networking_secgroup_rule_v2" "ssh_rule" {
@@ -113,7 +114,7 @@ resource "openstack_compute_keypair_v2" "ssh_key" {
 }
 
 resource "openstack_networking_port_v2" "vm_port" {
-  name       = "ied-host-port"
+  name       = "ied-port-imglocal"
   network_id = openstack_networking_network_v2.private_net.id
   fixed_ip {
     subnet_id = openstack_networking_subnet_v2.private_subnet.id
@@ -128,7 +129,7 @@ resource "openstack_networking_floatingip_v2" "fip" {
 resource "openstack_networking_floatingip_associate_v2" "fip_assoc" {
   floating_ip = openstack_networking_floatingip_v2.fip.address
   port_id     = openstack_networking_port_v2.vm_port.id
-  depends_on = [
+    depends_on = [
     openstack_networking_router_interface_v2.router_interface
   ]
 }
@@ -148,7 +149,7 @@ resource "openstack_blockstorage_volume_v3" "ied_data" {
 
 #lanzamos la VM
 resource "openstack_compute_instance_v2" "ied_host" {
-  name            = "ied-host"
+  name            = "ied-host-imglocal"
   image_name      = var.image_name
   flavor_name     = var.flavor_name
   key_pair        = openstack_compute_keypair_v2.ssh_key.name

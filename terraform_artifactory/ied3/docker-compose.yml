@@ -1,0 +1,15 @@
+networks:
+  WIFI6_Network:
+    driver: bridge
+services:
+  virtual-circuit-breaker:
+    container_name: XBCR-3
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied3-substation_virtual_nodes-virtual-circuit-breaker:latest
+    networks:
+    - WIFI6_Network
+    privileged: true

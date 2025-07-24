@@ -1,0 +1,68 @@
+networks:
+  Cable_Network:
+    driver: bridge
+  WIFI6_Network:
+    driver: bridge
+services:
+  smvgentime:
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied1-smvgentime:latest
+    logging:
+      driver: journald
+    networks:
+    - Cable_Network
+    - WIFI6_Network
+    privileged: true
+  virtual-104-gtw:
+    container_name: usvc-1
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied1-substation_virtual_nodes-virtual-104-gtw:latest
+    networks:
+    - Cable_Network
+    - WIFI6_Network
+    privileged: true
+  virtual-circuit-breaker:
+    container_name: XBCR-1
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied1-substation_virtual_nodes-virtual-circuit-breaker:latest
+    networks:
+    - Cable_Network
+    - WIFI6_Network
+    privileged: true
+  virtual-ied:
+    container_name: reader-1
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied1-substation_virtual_nodes-virtual-ied:latest
+    logging:
+      driver: journald
+    networks:
+    - Cable_Network
+    - WIFI6_Network
+    privileged: true
+  virtual-merging-unit:
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied1-virtual-merging-unit:latest
+    networks:
+    - Cable_Network
+    - WIFI6_Network
+    privileged: true

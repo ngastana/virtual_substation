@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>smvScope</title>
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+<!--suppress JSUnresolvedLibraryURL -->
+<script src="static/jquery.min.js"></script>
+<!--suppress JSUnresolvedLibraryURL -->
+<script src="static/bootstrap.min.js"></script>
+
+  <script src="static/chart.js"></script>
+  <script src="static/hammer.min.js"></script>
+  <script src="static/chartjs-plugin-zoom.min.js"></script>
+    <!--<script src="static/luxon.js"></script>-->
+  <!--<script src="static/chartjs-adapter-luxon.js"></script>-->
+  <!--<script src="static/chartjs-plugin-streaming@2.0.0-beta.2.js"></script>-->
+  <script>
+
+//https://nagix.github.io/chartjs-plugin-streaming/samples/zoom.html
+var maxSampleCount = 4000; //this can be 4000 or 4800
+
+
+var config = {
+  type: 'line',
+  data: {
+    datasets: [],
+  },
+  options: {
+    animation: false,
+    scales: {
+      x: {
+        title: { 
+          display: true,
+          text: 'smpCnt',
+        },
+        max: maxSampleCount,
+        minRotation: 0,
+        maxRotation: 0,
+      },
+      y: {
+        title: { 
+          display: true,
+          text: 'value',
+        },
+        type: 'linear',
+        minRotation: 0,
+        maxRotation: 0,
+      },
+    },
+    interaction: {
+      intersect: false,
+    },
+    plugins: {
+      title: {
+        display: true,
+        text: 'smvScope',
+      },
+      zoom: {
+        pan: {
+          enabled: true,
+          mode: 'x',
+          overScaleMode: 'x',
+        },
+        zoom: {
+          enabled: true,
+          mode: 'xy',
+          overScaleMode: 'y',
+        },
+      }
+    }
+  }
+};
+</script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <label for="streamValue">List of available streams/channels: (click to visualise one or more stream/channels)</label>
+            <select class="mdb-select colorful-select md-form custom-select" multiple id="streamValue" style="height: 200px;">
+            </select>
+            <div class="form-check form-switch">
+              <input type="checkbox" class="form-check-input" id="enableListener" autocomplete="off" 
+                style="height: 30px; display: flex; align-items: center;" onchange="sendChange(this)">
+              <label class="form-check-label" for="enableListener" style="margin: 7px 0 0;">Listen for new streams (disable to improve graph performance)</label>
+            </div>
+            <div>
+              <label for="range">Set chart range (samples/sec.):</label>
+              <select name="range" id="range" onchange="maxSampleCount = this.value; updateMaxSampleCount();">
+                <option value="4000">4000</option>
+                <option value="4800">4800</option>
+              </select> 
+            </div>
+          </div>
+          <div>
+            <canvas id="smvChart"></canvas>
+          </div>
+          <div>
+            Stream information:<BR>
+            <div id="info"></div>
+            <BR>
+          </div>
+          <div>
+            <textarea class="form-control" rows="6" readonly id="log"></textarea>
+          </div>
+        </div>
+    </div>
+</div>
+<script>
+
+var chartColors = {
+  red: 'rgb(255, 99, 132)',
+  yellow: 'rgb(255, 205, 86)',
+  green: 'rgb(75, 192, 192)',
+  blue: 'rgb(0, 0, 255)',
+  red2: 'rgb(255, 0, 0)',
+  green2: 'rgb(0, 255, 0)',
+};
+
+var color = Chart.helpers.color;
+
+var colorNames = Object.keys(chartColors);
+
+function addDataset(label) {
+  var colorName = colorNames[config.data.datasets.length % colorNames.length];
+  var newColor = chartColors[colorName];
+  var newDataset = {
+    label: label,
+    backgroundColor: color(newColor).alpha(0.5).rgbString(),
+    borderColor: newColor,
+    fill: false,
+    data: [],
+
+    pointRadius: 0,
+    stepped: false,
+    tension: 0,
+    parsing: false,
+    normalized: true,
+    borderDash: [],
+    //hidden: hidden,
+  };
+
+  config.data.datasets.push(newDataset);
+  window.myChart.update();
+  return newDataset;
+}
+
+function sendChange(ref)
+{
+  var value
+  if(ref.type == "checkbox") value = ref.checked;
+  else value = ref.value;
+
+  //console.log(JSON.stringify({ "id": ref.id, "value": value }));
+  $.ajax({
+      type: "POST",
+      data: JSON.stringify({ "id": ref.id, "value": value }),
+      url: 'control-setting',
+      dataType: 'json',
+      contentType: "application/json",
+      success: function(res){
+          //console.log(res);
+      },
+      error: function(res){
+          console.log(res);
+      }
+  });
+}
+
+function refresh()
+{
+  $.ajax({
+      type: "POST",
+      data: JSON.stringify({ "id": "refresh", "value": 0 }),
+      url: 'control-setting',
+      dataType: 'json',
+      contentType: "application/json",
+      success: function(res){
+          //console.log(res);
+      },
+      error: function(res){
+          console.log(res);
+      }
+  });
+}
+
+function sendChangeMultiple(ref)
+{
+  var pref = ref.parentElement;
+  var options = pref.selectedOptions;
+  var values = Array.from(options).map(({ value }) => value);
+  //console.log(values);
+  $.ajax({
+      type: "POST",
+      data: JSON.stringify({ "id": pref.id, "value": values }),
+      url: 'control-setting',
+      dataType: 'json',
+      contentType: "application/json",
+      success: function(res){
+          //console.log(res);
+      },
+      error: function(res){
+          console.log(res);
+      }
+  });
+}
+
+function updateMaxSampleCount()
+{
+  config.data.labels = [];
+  config.data.labels.length = 0;
+  for(var index =1; index < maxSampleCount; index++) {
+    config.data.labels.push(index);
+  }
+  config.options.scales.x.max = maxSampleCount;
+}
+
+window.onload = function() {
+  const ctx = document.getElementById('smvChart').getContext('2d');
+  window.myChart = new Chart(ctx, config);
+
+  updateMaxSampleCount();
+
+  const stream_source = new EventSource("/stream-data");
+  stream_source.onmessage = function (event) {
+    const cdata = JSON.parse(event.data);
+
+    var infos = ""
+    for(var svID in cdata['stream_info']) {
+      infos += "svID: " + svID;
+      infos += ", channels: " + cdata['stream_info'][svID]['size']/8;
+      infos += ", confRev: " + cdata['stream_info'][svID]['confRev'];
+      infos += ", smpSync: " + cdata['stream_info'][svID]['smpSync'];
+      infos += ", seconds running: " + cdata['stream_info'][svID]['seconds'];
+      infos += "<BR>";
+    }
+    const info = document.getElementById('info');
+    info.innerHTML = infos;
+
+    var used = [];
+    for(var svID in cdata['dataSets']) { //streams
+      for(var channel in cdata['dataSets'][svID][0]['channels']) {
+        var dset = 'Dataset ' + svID + ',' + channel; //derive label from key stream/channel values
+        var curDataSet = null;
+        config.data.datasets.forEach(function(dataset) { //search for this dataset
+          if( dataset.label === dset){ // if found, add data to it
+            curDataSet = dataset;
+          }
+        });
+        if(curDataSet == null){
+          // no dataset found, so add it
+          curDataSet = addDataset(dset);
+        }
+        used.push(curDataSet);//register the dataset as in use
+
+        curDataSet.length = 0;
+        curDataSet.data = []; //clear the data
+
+        var index = 0;
+        for(var idx = 1; idx < maxSampleCount; idx++) {
+          if(typeof cdata['dataSets'][svID][index] !== 'undefined'){
+            var smpCnt = cdata['dataSets'][svID][index]['x'];
+            if(idx == smpCnt ) {
+              var yval = cdata['dataSets'][svID][index]['channels'][channel]['y'];
+              curDataSet.data.push({
+                x: smpCnt,
+                y: yval,
+              });
+              index++;
+              continue;
+            }
+          }
+          //add a null sample
+          curDataSet.data.push({
+            x: idx,
+            y: 0,
+          });
+        }
+      }
+    }
+    config.data.datasets = used; // new set of datasets
+    window.myChart.update();
+  }
+  
+  const log_source = new EventSource("/log-data");
+  log_source.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+    var log_item = document.getElementById('log');
+    for(const item of data){
+      log_item.value += item + "\n";
+    }
+    log_item.scrollTop = log_item.scrollHeight;
+  }
+
+  const control_source = new EventSource("/control-data");
+  control_source.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+    for(const dataItem in data) {
+      if(dataItem == "streamSelect_items") { // populate stream list with items (means a new stream was discovered)
+        const streamSelect = document.getElementById('streamValue');
+        streamSelect.options.length = 0;
+        var i = 1;
+        for (var item of data[dataItem]) {
+          var opt = new Option(item,i);
+          
+          opt.onmousedown = function() {
+              if ($(this).is(':selected')) {
+                  $(this).removeAttr('selected');
+                  this.selected = false;
+              } else {
+                  $(this).attr('selected','true');
+                  this.selected = true;
+              }
+              sendChangeMultiple(this);
+              return false;
+            };
+          streamSelect.add(opt);
+          i++;
+        }
+      }
+      else { // just update a regular control
+        for (const prop in data[dataItem] ) {
+          var obj = document.getElementById( prop );
+          if (typeof data[dataItem][prop] === "boolean") {
+            obj.checked = data[dataItem][prop];
+          }
+          if(prop === "streamValue"){//handling for a multiselect list control
+            for(var option of obj.options){
+              if(data[dataItem][prop].includes(option.value) ){
+                option.selected = true;
+                $(option).attr('selected','true');
+              }
+              else{
+                option.selected = false;
+                $(option).removeAttr('selected');
+              }
+            }
+          }
+          else {//any generic control; just update item.value
+            obj.value = data[dataItem][prop];
+          }
+        }
+      } 
+    }
+  }
+
+  refresh();
+};
+</script>
+</body>
+</html>

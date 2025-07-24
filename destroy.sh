@@ -27,4 +27,19 @@ do
 
 done
 
+echo ""
+echo " Borrando keypairs manualmente si existen..."
+
+KEYPAIRS=("ssh-key-imgartifactory" "ssh-key-imglocal")
+
+for key in "${KEYPAIRS[@]}"; do
+  if openstack --insecure keypair show "$key" &>/dev/null; then
+    echo "Eliminando keypair: $key"
+    openstack --insecure keypair delete "$key" && echo " ✅ $key eliminado."
+  else
+    echo " ℹ️  El keypair '$key' no existe. Nada que borrar."
+  fi
+done
+
+
 echo "✅ Recursos destruidos correctamente."

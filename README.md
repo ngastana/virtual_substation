@@ -49,46 +49,64 @@ terraform_artifactory/terraform.tfvars
 El archivo `terraform.tfvars` debe tener el siguiente contenido:
 
 ```hcl
-# Credenciales de OpenStack
-auth_url         = "https://cloud.tecnalia.dev:13000/v3"
-region           = "regionOne"
+# URL de autenticación de OpenStack
+auth_url = "https://cloud.tecnalia.dev:13000/v3"
 
-user_name        = "user@tecnalia.com"
-user_domain_name = "tri.lan"
-password         = "tu_contraseña_tecnalia"
+# Región de OpenStack donde se desplegarán los recursos
+region = "regionOne"
 
-project_name      = "virtualizacióndenodoslógicos"
-project_domain_id = "3e6dcdec8ad44563a8334675306bc571"
+# Credenciales del usuario para autenticarse en OpenStack
+user_name        = "cooperacion-111306@tecnalia.com"  # Usuario OpenStack
+user_domain_name = "tri.lan"                          # Dominio del usuario
+password         = "******"                      # Contraseña del usuario
 
-# Parámetros de la instancia
-instance_name = "rhel-docker-host"
-image_name    = "ubuntu-22.04-server-cloudimg-amd64"
-flavor_name   = "std2_4"
-#flavor_name = "gpu2_2"  # Alternativa para uso con GPU
+# Proyecto (tenant) donde se desplegarán los recursos
+project_name      = "virtualizacióndenodoslógicos"                   # Nombre del proyecto
+project_domain_id = "3e6dcdec8ad44563a8334675306bc571"               # ID del dominio del proyecto
 
-network_name        = "nw_int_virtualizacióndenodoslógicos"
-keypair_name        = "ssh-key"
-public_key_path     = "~/.ssh/id_ed25519.pub"
-private_key_path    = "~/.ssh/id_ed25519"
-security_groups     = ["default", "sg_virtualizacióndenodoslógicos"]
-insecure            = true
+# Configuración de la instancia (máquina virtual)
+instance_name = "rhel-docker-host"                        # Nombre de la instancia
+image_name    = "ubuntu-22.04-server-cloudimg-amd64"      # Imagen de sistema operativo
+flavor_name   = "std2_4"                                  # Tipo de máquina (CPU/RAM)
+#flavor_name = "gpu2_2"                                   # Alternativa con GPU (opcional)
 
-# Configuración de volúmenes y contenedores
-docker_volume_name  = "nombre_del_volumen_docker"
-docker_volume_size  =  # Especifica el tamaño del volumen según lo que necesites
-images_tar_path     = "substation_images.tar"
+# Red interna de la instancia
+network_name = "nw_int_virtualizacióndenodoslógicos"
+
+# Clave pública SSH y nombre del keypair usado en OpenStack
+keypair_name    = "ssh-key-imgartifactory"           # Nombre del keypair en OpenStack
+public_key_path = "~/.ssh/id_ed25519.pub"            # Ruta local de la clave pública
+
+# Grupos de seguridad para la instancia (firewall OpenStack)
+security_groups = ["default", "sg_virtualizacióndenodoslógicos"]  # Revisar con: openstack security group show <nombre>
+
+# Omitir verificación de certificados SSL (útil con certificados autofirmados)
+insecure = true
+
+# Volumen adicional para almacenamiento persistente de Docker
+docker_volume_name = "docker-volume"   # Nombre del volumen
+docker_volume_size = 45                # Tamaño en GB
+
+# Clave privada SSH para acceso a la instancia
+private_key_path = "~/.ssh/id_ed25519"
+
+# Ruta del archivo `.tar` con las imágenes Docker a cargar
+images_tar_path = "substation_images.tar"
+
+# Archivo `docker-compose` a desplegar dentro de la instancia
 docker_compose_file = "docker-compose.yml"
 
-# Certificado (opcional)
-#cacert_file = "/ruta/a/ca.pem"
+# Ruta opcional al certificado CA si se requiere conexión segura
+#cacert_file = "/home/nerea/Downloads/ca.pem"
 
-# Red externa (para salida a internet o flotar IPs)
-external_network_id = "b58d8f92-c96c-43fb-a591-2dcd8e3d04a2"  # red pública de OpenStack
-#external_network_id = "62d08de1-83e7-4086-944a-685eaa93f35e"  # red privada alternativa
+# Red pública para asignar IP flotante a la instancia
+external_network_id = "b58d8f92-c96c-43fb-a591-2dcd8e3d04a2"  # Red pública (consultar con: openstack --insecure network list)
+#external_network_id = "62d08de1-83e7-4086-944a-685eaa93f35e"  # Alternativa con red privada
 
-# Credenciales para Artifactory
-artifactory_username = "tu_usuario"
-artifactory_password = "tu_contraseña_o_token"
+# Credenciales para acceder al repositorio Artifactory
+artifactory_user     = "virtualizaciondenodoslogicos-docker-dev@tecnalia.com"  # Usuario de Artifactory
+artifactory_password = "#)Z|60I_9og3"                                           # Contraseña del usuari
+
 ```
 
 > ⚠️ **Importante:** este archivo contiene información sensible. El archivo esta incluido en `.gitignore`, pero aún así asegúrate de que no esté subido.

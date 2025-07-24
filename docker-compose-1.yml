@@ -1,0 +1,73 @@
+services:
+  virtual-merging-unit:
+    build: ./virtual-merging-unit
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    privileged: true
+    networks:
+    - Cable_Network
+    - WIFI6_Network
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied1-virtual-merging-unit:latest
+  smvgentime:
+    build: ./smvgentime
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    logging:
+      driver: journald
+    privileged: true
+    networks:
+    - Cable_Network
+    - WIFI6_Network
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied1-smvgentime:latest
+  virtual-circuit-breaker:
+    build: ./virtual-circuit-breaker
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    privileged: true
+    container_name: XBCR-1
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied1-substation_virtual_nodes-virtual-circuit-breaker:latest
+    networks:
+    - Cable_Network
+    - WIFI6_Network
+  virtual-ied:
+    build: ./virtual-ied
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    logging:
+      driver: journald
+    privileged: true
+    container_name: reader-1
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied1-substation_virtual_nodes-virtual-ied:latest
+    networks:
+    - Cable_Network
+    - WIFI6_Network
+  virtual-104-gtw:
+    build: ./virtual-104-gtw
+    environment:
+    - TZ=Europe/Madrid
+    - INTERFACE=eth0
+    - APPID=0x4100
+    - NS=120000
+    privileged: true
+    container_name: usvc-1
+    image: virtualizaciondenodoslogicos-docker-dev-local.artifact.tecnalia.dev:443/ied1-substation_virtual_nodes-virtual-104-gtw:latest
+    networks:
+    - Cable_Network
+    - WIFI6_Network
+networks:
+  Cable_Network:
+    driver: bridge
+  WIFI6_Network:
+    driver: bridge
