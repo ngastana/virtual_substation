@@ -3,7 +3,7 @@ region   = "regionOne"
 
 user_name        = "cooperacion-111306@tecnalia.com"
 user_domain_name = "tri.lan"
-password         = "1Sondika!!!"
+password         = "********"
 
 project_name      = "virtualizacióndenodoslógicos"
 project_domain_id = "3e6dcdec8ad44563a8334675306bc571"
